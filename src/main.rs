@@ -12,6 +12,17 @@ use eframe::egui;
 
 fn main() -> eframe::Result<()> {
     let options = eframe::NativeOptions {
+        #[cfg(windows)]
+        wgpu_options: {
+            let mut setup = eframe::egui_wgpu::WgpuSetupCreateNew::without_display_handle();
+            // A enumeração de outros backends pode cair no driver OpenGL AMD
+            // antes de abrir a janela. No Windows, inicialize somente DirectX 12.
+            setup.instance_descriptor.backends = eframe::wgpu::Backends::DX12;
+            eframe::WgpuConfiguration {
+                wgpu_setup: setup.into(),
+                ..Default::default()
+            }
+        },
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([800.0, 600.0])
             .with_min_inner_size([400.0, 300.0]),
@@ -21,6 +32,9 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "Annif Manager",
         options,
-        Box::new(|_cc| Ok(Box::new(AnnifManagerApp::default()))),
+        Box::new(|cc| {
+            cc.egui_ctx.set_theme(egui::ThemePreference::Light);
+            Ok(Box::new(AnnifManagerApp::default()))
+        }),
     )
 }

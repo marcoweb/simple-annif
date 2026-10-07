@@ -38,24 +38,56 @@ pub fn run(mut command: Command) -> Result<ProcessResult> {
     })
 }
 
-pub fn list_projects(command: Command) -> Result<Vec<Project>> {
-    let result = run(command)?;
-    if result.exit_code != Some(0) {
-        anyhow::bail!("Falha ao listar projetos: {}", result.stderr);
-    }
-    // Preserva o parser existente; validar o formato com a versão empacotada.
-    let mut projects = Vec::new();
-    for line in result.stdout.lines().skip(2) {
-        let parts: Vec<_> = line.split_whitespace().collect();
-        if parts.len() >= 3 {
-            projects.push(Project {
-                project_id: parts[0].into(),
-                name: parts[1..parts.len() - 1].join(" "),
-                backend: parts[parts.len() - 1].into(),
-            });
-        }
-    }
-    Ok(projects)
+pub fn ensure_success(result: ProcessResult) -> Result<ProcessResult> {
+    anyhow::ensure!(
+        result.exit_code == Some(0),
+        "Comando {} falhou (código {:?}):\n{}\n{}",
+        result.command,
+        result.exit_code,
+        result.stdout,
+        result.stderr
+    );
+    Ok(result)
+}
+
+pub fn list_projects(mut command: impl FnMut(&[&str]) -> Result<Command>) -> Result<Vec<Project>> {
+    let result = ensure_success(run(command(&["list-projects"])?)?)?;
+    anyhow::ensure!(
+        result
+            .stdout
+            .lines()
+            .next()
+            .is_some_and(|line| line.starts_with("Project ID")),
+        "Formato inesperado em list-projects: {}",
+        result.stdout
+    );
+    result
+        .stdout
+        .lines()
+        .skip(2)
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| {
+            let id = line.split_whitespace().next().context("Projeto sem ID")?;
+            // A tabela não contém backend; show-project fornece os campos nomeados.
+            let details = ensure_success(run(command(&["show-project", id])?)?)?;
+            parse_project(&details.stdout)
+        })
+        .collect()
+}
+
+fn parse_project(text: &str) -> Result<Project> {
+    let field = |key: &str| -> Result<String> {
+        text.lines()
+            .find_map(|line| line.strip_prefix(key))
+            .map(|value| value.trim().to_owned())
+            .filter(|value| !value.is_empty())
+            .with_context(|| format!("Campo {key} ausente em show-project: {text}"))
+    };
+    Ok(Project {
+        project_id: field("Project ID:")?,
+        name: field("Project Name:")?,
+        backend: field("Backend:")?,
+    })
 }
 
 fn read_logs(
@@ -151,6 +183,22 @@ mod tests {
         let logs: Vec<_> = receiver.iter().collect();
         assert!(logs.iter().any(|line| line == "[STDOUT] progresso"));
         assert!(logs.iter().any(|line| line == "[STDERR] falha técnica"));
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod parsing_tests {
+    use super::*;
+    #[test]
+    fn project_details_keep_names_and_real_backend() -> Result<()> {
+        let project = parse_project(
+            "Project ID:        assunto-pt\nProject Name:      Ciência e computação\nVocabulary:        vocab\nBackend:           tfidf\nTrained:           True\nModification time: 2026-10-07 12:00:00\n",
+        )?;
+        assert_eq!(project.project_id, "assunto-pt");
+        assert_eq!(project.name, "Ciência e computação");
+        assert_eq!(project.backend, "tfidf");
+        assert!(parse_project("Project ID: x\n").is_err());
         Ok(())
     }
 }

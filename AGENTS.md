@@ -1,7 +1,29 @@
 # Annif Manager — instruções para retomar no Windows
 
-Estado registrado em 7 de outubro de 2026. A próxima tarefa é compilar e testar
-o pacote completo em Windows 10/11 x64. Leia também `README.md`,
+Estado atualizado em 7 de outubro de 2026. O pacote completo foi compilado em
+Windows x64 e a verificação CLI passou na máquina de build, após extração e
+mudança de diretório. Formatação, check, Clippy, seis testes Rust e três testes
+Python passaram. Relatório: `packaging/validation-windows.json`.
+Artefato: `dist/AnnifManager-win64.zip`; SHA-256:
+`855b34e13b571510e61fb42236735e6d8dcee0ceb0e3619b3b539053917cd5a3`.
+Rust foi instalado no perfil do desenvolvedor; uv está em
+`target/build-tools/Scripts/`. Inclua esses diretórios no PATH da sessão para
+repetir a montagem. As versões fixadas foram preservadas. A inicialização gráfica Windows usa
+somente DirectX 12 após falha no driver AMD `atio6axx.dll` (`0xc0000005`).
+O ZIP corrigido abriu uma janela responsiva na máquina de build, sem override
+de ambiente; os fluxos da UI continuam pendentes. O teste de mudança de
+diretório foi executado no artefato anterior; consultar o relatório para escopo.
+A interface inicia em tema claro, com mensagens de sucesso em verde escuro
+e erros na cor semântica do tema. O ZIP foi recompilado e os checks e a
+verificação CLI passaram após essa mudança. Corrigido também o fundo preto:
+as abas agora são renderizadas dentro de um CentralPanel. Captura do ZIP
+extraído confirmou fundo claro e texto legível em Diagnóstico; demais abas
+e fluxos ainda precisam de revisão visual.
+A próxima tarefa é validar os fluxos da UI e o pacote em Windows 10/11 x64
+limpo. O usuário ainda não dispõe dessa máquina/VM; o roteiro está em
+`packaging/TESTE-WINDOWS-LIMPO.md`. Não considerar a portabilidade concluída.
+As seções abaixo preservam as decisões e o histórico da etapa Wine.
+Leia também `README.md`,
 `packaging/README.md` e `packaging/validation-wine.json` antes de alterar o código.
 
 ## Objetivo e decisões que devem ser preservadas

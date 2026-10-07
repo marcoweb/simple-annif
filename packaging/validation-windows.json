@@ -1,0 +1,148 @@
+{
+  "python": "3.13.16",
+  "annif": "1.4.2",
+  "numpy": "2.2.6",
+  "scikit_learn": "1.7.2",
+  "architecture": "x64",
+  "network": "blocked_in_cli_tests",
+  "commands": [
+    {
+      "command": "--version",
+      "arguments": [],
+      "status": "passed"
+    },
+    {
+      "command": "list-projects",
+      "arguments": [],
+      "status": "passed"
+    },
+    {
+      "command": "load-vocab",
+      "arguments": [
+        "smoke"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "train",
+      "arguments": [
+        "smoke-tfidf"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "train",
+      "arguments": [
+        "smoke-mllm"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "suggest",
+      "arguments": [
+        "smoke-tfidf"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "suggest",
+      "arguments": [
+        "smoke-mllm"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "suggest",
+      "arguments": [
+        "smoke-ensemble"
+      ],
+      "status": "passed"
+    }
+  ],
+  "date": "2026-10-07",
+  "environment": "native_windows_build_machine",
+  "windows": {
+    "version": "25H2",
+    "build": "26200.9457",
+    "architecture": "x64",
+    "registry_product_name": "Windows 10 Pro"
+  },
+  "build_tools": {
+    "rustc": "1.99.0 (b940084d7 2026-09-28)",
+    "target": "x86_64-pc-windows-msvc",
+    "visual_studio_build_tools": "18.4.11605.240",
+    "python": "3.14.4",
+    "uv": "0.12.23"
+  },
+  "checks": {
+    "cargo_fmt_check": "passed",
+    "cargo_check_locked": "passed",
+    "cargo_clippy_all_targets_deny_warnings": "passed",
+    "cargo_test_locked": {
+      "passed": 6,
+      "failed": 0
+    },
+    "packaging_unittest": {
+      "passed": 3,
+      "failed": 0
+    },
+    "release_build_locked": "passed"
+  },
+  "runtime_only": false,
+  "artifact": "dist/AnnifManager-win64.zip",
+  "artifact_size_bytes": 171478222,
+  "artifact_sha256": "855b34e13b571510e61fb42236735e6d8dcee0ceb0e3619b3b539053917cd5a3",
+  "artifact_hash_check": "passed_independent_Get-FileHash_matches_sidecar",
+  "pe_inspection": {
+    "tool": "dumpbin 14.50.35726.0",
+    "machine": "x64",
+    "subsystem": "Windows GUI",
+    "direct_vcruntime_or_msvcp_imports": false,
+    "scope": "Rust executable only; Python extension DLL dependencies and clean-machine loading remain unverified"
+  },
+  "extracted_zip_cli_test": "not_repeated_for_graphics_only_change; build_time_cli_verification_passed",
+  "relocation_test": "passed_on_previous_artifact; not_repeated_for_graphics_only_change",
+  "native_windows_test": "cli_passed_on_build_machine",
+  "clean_windows_test": "not_run_no_clean_machine_available",
+  "desktop_application_test": "extracted_ZIP_started_and_responsive_on_build_machine",
+  "ui_flows_test": "not_run",
+  "damaged_release_package_ui_test": "not_run",
+  "portable_validation_complete": false,
+  "pending_checklist": "packaging/TESTE-WINDOWS-LIMPO.md",
+  "previous_artifact": {
+    "artifact_sha256": "678d74d9ae0c3717a3156554bad11b638b0f551d6b33c5d832a3424744a356f5",
+    "artifact_size_bytes": 171474413,
+    "extracted_zip_cli_test": "passed_in_path_with_spaces_and_accents",
+    "relocation_test": "passed_after_moving_package_and_changing_working_directory"
+  },
+  "startup_fix": {
+    "original_fault_module": "atio6axx.dll",
+    "driver_version": "32.0.31041.1004",
+    "exception": "0xc0000005",
+    "original_application_path": "D:/AnnifManager/AnnifManager.exe",
+    "change": "Windows wgpu instance uses only DX12; avoids initialization of other graphics backends",
+    "test_path": "target/Validação DirectX 12/AnnifManager",
+    "scope": "Startup and OS responsiveness only; visual rendering and UI workflows still pending"
+  },
+  "previous_startup_test": {
+    "artifact_sha256": "22ab4258e51bd65a68faf3a58a5740fadb92c5e237d3ad5d068fea18619bc873",
+    "result": "startup_passed_on_build_machine; window_responding_after_15_seconds; no_backend_environment_override; stderr_empty"
+  },
+  "theme_change": {
+    "default": "light",
+    "success_text_rgb": [
+      21,
+      105,
+      46
+    ],
+    "error_text": "theme_error_fg_color",
+    "visual_review": "Diagnostics screenshot inspected: central background light, text legible. Automated tab click did not switch to Vocabularies; other tabs not visually verified.",
+    "checks": "cargo fmt, check, clippy and 6 Rust tests passed; rebuilt package passed all 8 runtime commands"
+  },
+  "central_panel_fix": {
+    "cause": "Root UI has no background; missing CentralPanel left dark renderer clear color visible",
+    "change": "All tab content wrapped in egui CentralPanel after top menu",
+    "screenshot": "target/painel-claro.png",
+    "checks": "fmt, check, Clippy, 6 Rust tests and 8 real runtime commands passed"
+  }
+}

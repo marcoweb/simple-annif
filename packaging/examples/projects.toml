@@ -1,0 +1,20 @@
+[meu-tfidf]
+name = "Meu projeto TF-IDF"
+backend = "tfidf"
+language = "pt"
+analyzer = "snowball(portuguese)"
+vocab = "meu-vocab"
+
+[meu-mllm]
+name = "Meu projeto MLLM"
+backend = "mllm"
+language = "pt"
+analyzer = "snowball(portuguese)"
+vocab = "meu-vocab"
+
+[meu-ensemble]
+name = "Meu Ensemble"
+backend = "ensemble"
+language = "pt"
+vocab = "meu-vocab"
+sources = "meu-tfidf:1.0,meu-mllm:1.0"

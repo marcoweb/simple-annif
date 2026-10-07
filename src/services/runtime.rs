@@ -11,6 +11,14 @@ pub enum ApplicationRuntime {
 }
 
 impl ApplicationRuntime {
+    pub fn context_key(&self) -> String {
+        match self {
+            Self::Embedded(runtime) => runtime.workspace().display().to_string(),
+            Self::System(runtime) => format!("{}|{}", runtime.python_cmd, runtime.annif_cmd),
+            Self::Unavailable(error) => error.clone(),
+        }
+    }
+
     pub fn detect() -> Self {
         match std::env::current_exe()
             .context("Não foi possível localizar o executável da aplicação")
@@ -89,9 +97,11 @@ impl AnnifRuntime for ApplicationRuntime {
         &self,
         vocab_id: &str,
         vocab_path: &str,
+        language: &str,
         sender: crossbeam_channel::Sender<String>,
     ) -> Result<std::thread::JoinHandle<Result<ProcessResult>>> {
-        self.backend()?.load_vocab(vocab_id, vocab_path, sender)
+        self.backend()?
+            .load_vocab(vocab_id, vocab_path, language, sender)
     }
 }
 

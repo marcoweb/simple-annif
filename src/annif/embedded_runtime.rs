@@ -190,7 +190,7 @@ impl AnnifRuntime for EmbeddedWindowsRuntime {
     }
 
     fn list_projects(&self) -> Result<Vec<Project>> {
-        commands::list_projects(self.annif_command(&["list-projects"])?)
+        commands::list_projects(|args| self.annif_command(args))
     }
 
     fn train(
@@ -206,17 +206,20 @@ impl AnnifRuntime for EmbeddedWindowsRuntime {
     }
 
     fn suggest(&self, project_id: &str, file_path: &str) -> Result<ProcessResult> {
-        commands::run(self.annif_command(&["suggest", project_id, file_path])?)
+        commands::ensure_success(commands::run(
+            self.annif_command(&["suggest", project_id, file_path])?,
+        )?)
     }
 
     fn load_vocab(
         &self,
         vocab_id: &str,
         vocab_path: &str,
+        language: &str,
         sender: crossbeam_channel::Sender<String>,
     ) -> Result<std::thread::JoinHandle<Result<ProcessResult>>> {
         commands::progressive(
-            self.annif_command(&["load-vocab", vocab_id, vocab_path])?,
+            self.annif_command(&["load-vocab", vocab_id, vocab_path, "--language", language])?,
             sender,
         )
     }

@@ -1,4 +1,4 @@
-use crate::annif::{AnnifRuntime, ProcessResult, Project};
+use crate::annif::{ProcessResult, Project};
 use crate::services::runtime::ApplicationRuntime;
 use eframe::egui;
 use std::sync::{Arc, Mutex};
@@ -25,6 +25,9 @@ impl Default for TrainingUi {
 }
 
 impl TrainingUi {
+    pub fn is_busy(&self) -> bool {
+        *self.is_training.lock().unwrap()
+    }
     pub fn ui(
         &mut self,
         ui: &mut egui::Ui,
@@ -43,11 +46,33 @@ impl TrainingUi {
         };
 
         ui.label(format!("Projeto Selecionado: {}", project_id));
+        if selected_project
+            .as_ref()
+            .is_some_and(|p| p.backend == "ensemble")
+        {
+            ui.label(
+                "Ensemble combina modelos já treinados. Treine seus projetos fonte e use Suggest.",
+            );
+            return;
+        }
+        ui.label("Corpus UTF-8: pasta com pares .txt/.key ou arquivo TSV aceito pelo Annif.");
         ui.add_space(10.0);
 
         ui.horizontal(|ui| {
-            ui.label("Diretório de Treinamento:");
+            ui.label("Corpus de treinamento:");
             ui.text_edit_singleline(&mut self.data_path);
+        });
+        ui.horizontal(|ui| {
+            if ui.button("Selecionar pasta...").clicked()
+                && let Some(path) = rfd::FileDialog::new().pick_folder()
+            {
+                self.data_path = path.display().to_string();
+            }
+            if ui.button("Selecionar arquivo...").clicked()
+                && let Some(path) = rfd::FileDialog::new().pick_file()
+            {
+                self.data_path = path.display().to_string();
+            }
         });
 
         ui.add_space(10.0);
@@ -67,6 +92,8 @@ impl TrainingUi {
         ui.add_space(20.0);
 
         if is_training {
+            ui.ctx()
+                .request_repaint_after(std::time::Duration::from_millis(100));
             ui.horizontal(|ui| {
                 ui.spinner();
                 ui.label("Treinando...");
@@ -97,11 +124,17 @@ impl TrainingUi {
         if let Some(res) = res_lock {
             match res {
                 Ok(p_res) => {
-                    ui.colored_label(egui::Color32::GREEN, "Treinamento concluído!");
+                    ui.colored_label(
+                        egui::Color32::from_rgb(21, 105, 46),
+                        "Treinamento concluído!",
+                    );
                     ui.label(format!("Duração: {} ms", p_res.duration.as_millis()));
                 }
                 Err(e) => {
-                    ui.colored_label(egui::Color32::RED, format!("Erro no treinamento: {}", e));
+                    ui.colored_label(
+                        ui.visuals().error_fg_color,
+                        format!("Erro no treinamento: {}", e),
+                    );
                 }
             }
         }
@@ -123,15 +156,15 @@ impl TrainingUi {
         let result_clone = self.result.clone();
 
         thread::spawn(move || {
-            match runtime_clone.train(&project_id, &data_path, tx) {
+            match crate::services::training::start(&runtime_clone, &project_id, &data_path, tx) {
                 Ok(handle) => {
                     let join_res = handle
                         .join()
                         .unwrap_or_else(|_| Err(anyhow::anyhow!("Thread panicked")));
-                    *result_clone.lock().unwrap() = Some(join_res.map_err(|e| e.to_string()));
+                    *result_clone.lock().unwrap() = Some(join_res.map_err(|e| format!("{e:#}")));
                 }
                 Err(e) => {
-                    *result_clone.lock().unwrap() = Some(Err(e.to_string()));
+                    *result_clone.lock().unwrap() = Some(Err(format!("{e:#}")));
                 }
             }
             *is_training_clone.lock().unwrap() = false;

@@ -1,5 +1,11 @@
 # Montagem do pacote Windows x64
 
+Em 7 de outubro de 2026, o pacote completo foi compilado em release e passou
+pela verificação CLI nativa na máquina de build Windows x64, inclusive após
+extração e mudança de diretório. Consulte [validation-windows.json](validation-windows.json)
+para hash, ambiente e verificações. A UI e o Windows limpo continuam pendentes;
+use [TESTE-WINDOWS-LIMPO.md](TESTE-WINDOWS-LIMPO.md) para registrar esses testes.
+
 Estas ferramentas são executadas pelo desenvolvedor. O usuário final recebe
 somente o ZIP pronto, descompacta e abre `AnnifManager.exe`.
 

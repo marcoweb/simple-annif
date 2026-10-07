@@ -77,7 +77,7 @@ impl DiagnosticsUi {
             }
             ApplicationRuntime::Unavailable(error) => {
                 ui.label("Runtime: incorporado indisponível");
-                ui.colored_label(egui::Color32::RED, error.as_str());
+                ui.colored_label(ui.visuals().error_fg_color, error.as_str());
                 false
             }
         };
@@ -105,7 +105,7 @@ impl DiagnosticsUi {
             ui.ctx().request_repaint_after(Duration::from_millis(100));
         }
         if let Some(error) = &self.error {
-            ui.colored_label(egui::Color32::RED, error);
+            ui.colored_label(ui.visuals().error_fg_color, error);
         }
         egui::ScrollArea::vertical().show(ui, |ui| {
             if let Some(result) = &self.python_result {
@@ -144,9 +144,9 @@ impl DiagnosticsUi {
         match result {
             Ok(result) => {
                 if result.exit_code == Some(0) {
-                    ui.colored_label(egui::Color32::GREEN, "OK");
+                    ui.colored_label(egui::Color32::from_rgb(21, 105, 46), "OK");
                 } else {
-                    ui.colored_label(egui::Color32::RED, "Falha na verificação");
+                    ui.colored_label(ui.visuals().error_fg_color, "Falha na verificação");
                 }
                 ui.label(format!("Comando: {}", result.command));
                 ui.label(format!("Duração: {} ms", result.duration.as_millis()));
@@ -170,7 +170,7 @@ impl DiagnosticsUi {
                 });
             }
             Err(error) => {
-                ui.colored_label(egui::Color32::RED, format!("Erro: {error}"));
+                ui.colored_label(ui.visuals().error_fg_color, format!("Erro: {error}"));
             }
         }
         ui.add_space(10.0);

@@ -88,12 +88,19 @@ a versão real do Annif escolhida para distribuição; o parser de projetos,
 em particular, é provisório. A camada de serviços desses fluxos será organizada
 nas próximas etapas.
 
-Já há uma ferramenta de montagem e um **ZIP do runtime Windows real**, com
-Python 3.13.16, Annif 1.4.2, dependências e dados linguísticos. O runtime passou
-pela verificação no Wine: carga de vocabulário, treinamento TF-IDF/MLLM e suggest
-TF-IDF/MLLM/Ensemble com conexões de rede bloqueadas. Esse ZIP ainda não inclui
-o executável gráfico Windows. A montagem do pacote completo está automatizada,
-mas sua compilação e validação em Windows limpo ainda não foram executadas.
+O **ZIP completo Windows x64** foi compilado em release em 7 de outubro de
+2026, com Python 3.13.16, Annif 1.4.2, dependências e dados linguísticos.
+Formatação, check, Clippy, seis testes Rust e três testes Python passaram.
+A verificação CLI nativa passou na máquina de build, inclusive após extrair
+e mover o pacote entre caminhos com espaços e acentos: carga de vocabulário,
+treinamento TF-IDF/MLLM e suggest TF-IDF/MLLM/Ensemble com conexões bloqueadas.
+O [relatório Windows](packaging/validation-windows.json) registra o hash e
+os limites dessa validação; o relatório Wine anterior permanece preservado.
+**Os fluxos da UI e a execução em Windows limpo ainda não foram validados.**
+Uma falha de abertura no driver AMD `atio6axx.dll` foi contornada restringindo
+a inicialização gráfica Windows a DirectX 12. O ZIP corrigido passou no teste
+de abertura e resposta da janela nesta máquina, sem configuração adicional.
+O [roteiro de teste](packaging/TESTE-WINDOWS-LIMPO.md) orienta essa etapa.
 A aplicação não instala nem baixa pacotes; downloads ocorrem somente na
 ferramenta de build do desenvolvedor.
 

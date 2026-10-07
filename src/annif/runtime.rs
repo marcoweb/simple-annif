@@ -34,6 +34,7 @@ pub trait AnnifRuntime: Send + Sync {
         &self,
         vocab_id: &str,
         vocab_path: &str,
+        language: &str,
         log_sender: crossbeam_channel::Sender<String>,
     ) -> Result<std::thread::JoinHandle<Result<ProcessResult>>>;
 }

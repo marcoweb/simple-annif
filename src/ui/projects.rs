@@ -30,6 +30,10 @@ impl Default for ProjectsUi {
 }
 
 impl ProjectsUi {
+    pub fn is_busy(&self) -> bool {
+        *self.is_loading.lock().unwrap()
+    }
+
     pub fn ui(
         &mut self,
         ui: &mut egui::Ui,
@@ -57,7 +61,10 @@ impl ProjectsUi {
         ui.separator();
 
         if self.is_editing_toml {
-            self.ui_edit_toml(ui);
+            self.ui_edit_toml(ui, runtime);
+            if self.projects.lock().unwrap().is_none() {
+                *selected_project = None;
+            }
         } else {
             self.ui_list_projects(ui, selected_project, runtime);
         }
@@ -81,6 +88,8 @@ impl ProjectsUi {
         ui.add_space(10.0);
 
         if is_loading {
+            ui.ctx()
+                .request_repaint_after(std::time::Duration::from_millis(100));
             ui.horizontal(|ui| {
                 ui.spinner();
                 ui.label("Carregando projetos...");
@@ -92,6 +101,12 @@ impl ProjectsUi {
 
         match projects_res {
             Some(Ok(projects)) => {
+                if selected_project
+                    .as_ref()
+                    .is_some_and(|selected| !projects.contains(selected))
+                {
+                    *selected_project = None;
+                }
                 if projects.is_empty() {
                     ui.label("Nenhum projeto encontrado.");
                 } else {
@@ -122,7 +137,7 @@ impl ProjectsUi {
                 }
             }
             Some(Err(err)) => {
-                ui.colored_label(egui::Color32::RED, format!("Erro: {}", err));
+                ui.colored_label(ui.visuals().error_fg_color, format!("Erro: {}", err));
             }
             None => {
                 ui.label("Clique em 'Atualizar Lista' para buscar os projetos.");
@@ -130,15 +145,49 @@ impl ProjectsUi {
         }
     }
 
-    fn ui_edit_toml(&mut self, ui: &mut egui::Ui) {
+    fn ui_edit_toml(&mut self, ui: &mut egui::Ui, runtime: &ApplicationRuntime) {
+        ui.label("Salve o TOML em projects/ do workspace ativo para que o Annif o encontre.");
+        if self.projects_toml_path.is_empty()
+            && let ApplicationRuntime::Embedded(embedded) = runtime
+        {
+            self.projects_toml_path = embedded
+                .workspace()
+                .join("projects")
+                .join("projects.toml")
+                .display()
+                .to_string();
+            if let Ok(text) = std::fs::read_to_string(&self.projects_toml_path) {
+                self.projects_toml_content = text;
+            }
+        }
+        ui.horizontal(|ui| {
+            if ui.button("Carregar arquivo indicado").clicked() {
+                match std::fs::read_to_string(&self.projects_toml_path) {
+                    Ok(text) => {
+                        self.projects_toml_content = text;
+                        self.save_status = None;
+                    }
+                    Err(error) => self.save_status = Some(format!("Erro ao ler: {error}")),
+                }
+            }
+            if ui
+                .add_enabled(
+                    self.projects_toml_content.is_empty(),
+                    egui::Button::new("Inserir exemplo TF-IDF / MLLM / Ensemble"),
+                )
+                .clicked()
+            {
+                self.projects_toml_content = crate::services::projects::EXAMPLE.into();
+            }
+        });
         ui.horizontal(|ui| {
             ui.label("Arquivo projects.toml:");
             ui.text_edit_singleline(&mut self.projects_toml_path);
             if ui.button("Procurar...").clicked()
                 && let Some(path) = FileDialog::new().add_filter("TOML", &["toml"]).pick_file()
             {
-                self.projects_toml_path = path.display().to_string();
-                if let Ok(content) = std::fs::read_to_string(&self.projects_toml_path) {
+                if let Ok(content) = std::fs::read_to_string(&path) {
+                    self.projects_toml_path = path.display().to_string();
                     self.projects_toml_content = content;
                     self.save_status = None;
                 } else {
@@ -163,9 +212,25 @@ impl ProjectsUi {
 
             ui.add_space(10.0);
 
+            if ui.button("Salvar como...").clicked()
+                && let Some(path) = FileDialog::new()
+                    .add_filter("TOML", &["toml"])
+                    .set_file_name("projects.toml")
+                    .save_file()
+            {
+                self.projects_toml_path = path.display().to_string();
+            }
             if ui.button("Salvar Alterações").clicked() {
-                match std::fs::write(&self.projects_toml_path, &self.projects_toml_content) {
-                    Ok(_) => self.save_status = Some("Salvo com sucesso!".to_string()),
+                match crate::services::projects::save_for_runtime(
+                    runtime,
+                    std::path::Path::new(&self.projects_toml_path),
+                    &self.projects_toml_content,
+                ) {
+                    Ok(_) => {
+                        self.save_status =
+                            Some("Salvo com sucesso! Atualize a lista de projetos.".to_string());
+                        *self.projects.lock().unwrap() = None;
+                    }
                     Err(e) => self.save_status = Some(format!("Erro ao salvar: {}", e)),
                 }
             }
@@ -185,7 +250,7 @@ impl ProjectsUi {
         let runtime_clone = runtime.clone();
 
         thread::spawn(move || {
-            let res = runtime_clone.list_projects().map_err(|e| e.to_string());
+            let res = runtime_clone.list_projects().map_err(|e| format!("{e:#}"));
             *projects_clone.lock().unwrap() = Some(res);
             *is_loading_clone.lock().unwrap() = false;
         });

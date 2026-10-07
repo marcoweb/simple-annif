@@ -136,6 +136,9 @@ def build(args):
         shutil.copy2(CONFIG / "python-win64.json", package / "python-win64.json")
         shutil.copy2(CONFIG / "nltk-data.json", package / "nltk-data.json")
         shutil.copy2(CONFIG / "verify_runtime.py", package / "verify_runtime.py")
+        shutil.copytree(CONFIG / "examples", package / "examples")
+        for guide in ["GUIA-USO.md", "TESTE-WINDOWS-LIMPO.md"]:
+            shutil.copy2(CONFIG / guide, package / guide)
         # Preserva licenças nos wheels e oferece cópias reunidas para consulta.
         licenses = package / "licenses"
         for distribution in packages.glob("*.dist-info"):

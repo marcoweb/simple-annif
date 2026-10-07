@@ -1,0 +1,20 @@
+[nalt-tfidf]
+name = "NALT TF-IDF"
+backend = "tfidf"
+language = "en"
+analyzer = "snowball(english)"
+vocab = "nalt"
+
+[nalt-mllm]
+name = "NALT MLLM"
+backend = "mllm"
+language = "en"
+analyzer = "snowball(english)"
+vocab = "nalt"
+
+[nalt-ensemble]
+name = "NALT Ensemble"
+backend = "ensemble"
+language = "en"
+vocab = "nalt"
+sources = "nalt-tfidf:1.0,nalt-mllm:1.0"
