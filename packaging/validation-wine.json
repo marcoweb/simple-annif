@@ -1,0 +1,68 @@
+{
+  "python": "3.13.16",
+  "annif": "1.4.2",
+  "numpy": "2.2.6",
+  "scikit_learn": "1.7.2",
+  "architecture": "x64",
+  "network": "blocked_in_cli_tests",
+  "commands": [
+    {
+      "command": "--version",
+      "arguments": [],
+      "status": "passed"
+    },
+    {
+      "command": "list-projects",
+      "arguments": [],
+      "status": "passed"
+    },
+    {
+      "command": "load-vocab",
+      "arguments": [
+        "smoke"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "train",
+      "arguments": [
+        "smoke-tfidf"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "train",
+      "arguments": [
+        "smoke-mllm"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "suggest",
+      "arguments": [
+        "smoke-tfidf"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "suggest",
+      "arguments": [
+        "smoke-mllm"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "suggest",
+      "arguments": [
+        "smoke-ensemble"
+      ],
+      "status": "passed"
+    }
+  ],
+  "environment": "wine",
+  "runtime_only": true,
+  "relocation_test": "passed",
+  "native_windows_test": "not_run",
+  "desktop_application_test": "not_run",
+  "artifact_sha256": "384e446884ec0bec6d19e3000ffd406a8a97a4af0eee641e739d15c86f5e99a5"
+}

@@ -1,0 +1,187 @@
+# Annif Manager
+
+Aplicação desktop em Rust com egui/eframe para usar o Annif. Desenvolvimento
+inicial no Linux; distribuição final para Windows 10/11 x64.
+
+## Distribuição portátil
+
+O usuário final deve apenas baixar o ZIP, descompactar e executar a aplicação.
+O pacote deve conter tudo que ela precisa para funcionar, sem instalar Rust,
+Python, pip, Annif ou ambientes virtuais e sem baixar dependências na primeira
+execução.
+
+```text
+AnnifManager/
+├── AnnifManager.exe
+├── runtime/
+│   ├── python.exe
+│   ├── python3.dll
+│   ├── python3XX.dll
+│   ├── python3XX.zip
+│   ├── python._pth
+│   ├── Lib/site-packages/     # Annif e todas as dependências compatíveis
+│   └── ...                   # DLLs e outros arquivos do Python incorporável
+└── workspace/
+    ├── projects/
+    ├── vocabularies/
+    ├── datasets/
+    ├── models/
+    ├── results/
+    └── logs/
+```
+
+`3XX` representa a versão de Python escolhida para o pacote; os nomes reais
+precisam corresponder à distribuição oficial dessa versão.
+
+O `EmbeddedWindowsRuntime` localiza `runtime` a partir do executável da aplicação,
+independentemente do diretório de trabalho. Usa exclusivamente o Python do
+pacote para todos os comandos Annif. O modo isolado (`-I`) ignora variáveis
+`PYTHON*` e pacotes do usuário; `-B` evita gravar bytecode no runtime e `-u`
+permite saída sem buffering. `-X utf8` preserva acentos nos logs do Windows.
+A aplicação define os caminhos de configuração e dados do Annif no workspace,
+remove configurações `ANNIF_*` herdadas e aponta `NLTK_DATA` para os recursos
+linguísticos incluídos no runtime.
+
+A distribuição Windows exige um único arquivo `python._pth`, com caminhos
+locais existentes, incluindo o diretório `site-packages` e `import site`.
+Renomeie o arquivo `python3XX._pth` original para `python._pth`; não deixe os
+dois arquivos no pacote. Usar o nome do executável evita depender de um nome
+de DLL para selecionar a configuração. Caminhos absolutos, `..` e links para
+fora do runtime são rejeitados. Isso evita que a busca de módulos dependa de
+outra instalação registrada no Windows.
+
+O ponto de entrada usado é `from annif.cli import cli; cli()`, o mesmo declarado
+pelo [Annif](https://github.com/NatLibFi/Annif/blob/main/pyproject.toml).
+Não depende de um launcher `annif.exe` ou de suporte a `python -m annif`.
+As regras de isolamento seguem a documentação do
+[Python incorporável](https://docs.python.org/3/using/windows.html#the-embeddable-package)
+e do [modo isolado](https://docs.python.org/3/using/cmdline.html#cmdoption-I).
+
+## Estado atual
+
+O runtime incorporado está implementado e conectado às telas existentes.
+A aplicação abre em **Diagnóstico**, mostrando o runtime selecionado. A
+verificação mostra stdout, stderr, código de saída e duração, em segundo plano.
+Código zero significa sucesso, inclusive quando a versão aparece em stderr.
+
+A seleção ocorre na inicialização:
+
+- Com `runtime` ao lado do executável, usa o runtime incorporado.
+- Sem `runtime`, builds de desenvolvimento (`cargo run`) usam o `SystemRuntime`.
+- Builds de distribuição (`--release`) sempre exigem o runtime incorporado.
+- Um pacote ausente ou incompleto mostra um erro e nunca recorre ao Python do
+  sistema no modo portátil.
+
+O workspace padrão fica ao lado do executável e seus diretórios são preparados
+antes de executar operações. Na tela de Diagnóstico, o workspace pode ser
+alterado para outro caminho absoluto, fora do runtime. Essa configuração vale
+para a sessão. Se a pasta padrão não for gravável, é possível selecionar outra.
+As operações já iniciadas conservam o workspace que tinham ao começar.
+
+Logs progressivos de treinamento e carga de vocabulário são capturados no
+resultado final, além de enviados à UI. Uma saída diferente de zero é tratada
+como falha nessas operações. Ainda não há timeout ou cancelamento de processos.
+
+As telas de projetos, vocabulários, treinamento e suggest já existiam e foram
+preservadas. Seus formatos de entrada e saída ainda precisam de validação com
+a versão real do Annif escolhida para distribuição; o parser de projetos,
+em particular, é provisório. A camada de serviços desses fluxos será organizada
+nas próximas etapas.
+
+Já há uma ferramenta de montagem e um **ZIP do runtime Windows real**, com
+Python 3.13.16, Annif 1.4.2, dependências e dados linguísticos. O runtime passou
+pela verificação no Wine: carga de vocabulário, treinamento TF-IDF/MLLM e suggest
+TF-IDF/MLLM/Ensemble com conexões de rede bloqueadas. Esse ZIP ainda não inclui
+o executável gráfico Windows. A montagem do pacote completo está automatizada,
+mas sua compilação e validação em Windows limpo ainda não foram executadas.
+A aplicação não instala nem baixa pacotes; downloads ocorrem somente na
+ferramenta de build do desenvolvedor.
+
+## Desenvolvimento
+
+Com Rust instalado e uma sessão gráfica disponível:
+
+```sh
+cargo run --locked
+```
+
+No modo de desenvolvimento sem runtime incorporado, informe executáveis de um
+ambiente existente, por exemplo:
+
+```text
+Python: /caminho/meu ambiente/bin/python
+Annif:  /caminho/meu ambiente/bin/annif
+```
+
+Informe os caminhos sem aspas e sem argumentos. Espaços e Unicode são aceitos.
+Os nomes padrão (`python3` no Linux, `python` no Windows e `annif`) usam o PATH
+somente nesse modo. A configuração não é salva entre execuções. As verificações
+de Python e Annif são independentes no `SystemRuntime`: escolha executáveis do
+mesmo ambiente.
+
+Para testar a descoberta do runtime incorporado no Fedora, o layout esperado é
+`runtime/bin/python3`, ao lado do executável em `target/debug/`. Esse runtime
+Linux deve ser preparado separadamente; copiar um virtualenv não comprova
+portabilidade. Um pacote Windows real não pode ser executado nesse sistema.
+
+## Preparar o pacote Windows
+
+A montagem está implementada em [packaging/build_portable.py](packaging/build_portable.py).
+Consulte [packaging/README.md](packaging/README.md) para os pré-requisitos,
+verificação e atualização de dependências.
+
+No ambiente de build Windows, gerar o pacote completo:
+
+```powershell
+python packaging/build_portable.py
+```
+
+No Fedora, gerar e testar apenas o runtime Windows usando Wine:
+
+```sh
+python3 packaging/build_portable.py --runtime-only --wine
+```
+
+Os artefatos ficam em `dist/`, acompanhados de SHA-256. O ZIP do runtime não
+contém a aplicação desktop. O pacote completo precisa do build release Windows
+x64 de `AnnifManager.exe`. As versões e hashes das dependências estão fixados
+no diretório `packaging/`; essa ferramenta não altera o Python global.
+
+## Organização
+
+```text
+src/
+├── main.rs                    # inicialização da janela
+├── app.rs                     # navegação e runtime compartilhado
+├── annif/
+│   ├── runtime.rs             # contrato e resultado do processo
+│   ├── commands.rs            # captura de saída e logs progressivos
+│   ├── system_runtime.rs      # executáveis externos no desenvolvimento
+│   └── embedded_runtime.rs    # Python incluído no pacote
+├── services/
+│   ├── runtime.rs             # seleção do runtime e troca de workspace
+│   ├── workspace.rs           # preparação dos diretórios modificáveis
+│   └── diagnostics.rs         # verificação em segundo plano e eventos
+└── ui/
+    └── diagnostics.rs         # apresentação e configuração do ambiente
+```
+
+O diagnóstico segue `ui → services → annif`. Os comandos são montados com
+`Path`/`PathBuf` e argumentos separados, sem shell. Não foram adicionadas
+dependências. No Windows, processos de CLI são iniciados sem abrir consoles.
+
+## Verificar
+
+```sh
+cargo fmt --check
+cargo check --locked
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked
+python3 -m unittest discover -s packaging -p 'test_*.py'
+```
+
+Os testes cobrem runtime ausente/incompleto, ausência de fallback, isolamento
+do comando, caminhos de módulos dentro do pacote, mudança de diretório do
+pacote, workspace separado/configurável, stdout/stderr, logs e falha por código
+de saída. Os testes com scripts de execução são exclusivos de Unix; os testes
+de seleção e montagem de comandos também podem rodar no Windows.

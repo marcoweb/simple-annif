@@ -1,0 +1,16 @@
+[
+  {
+    "name": "punkt_tab",
+    "directory": "tokenizers",
+    "url": "https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/tokenizers/punkt_tab.zip",
+    "sha256": "e57f64187974277726a3417ca6f181ec5403676c717672eef6a748a7b20e0106",
+    "filename": "punkt_tab.zip"
+  },
+  {
+    "name": "stopwords",
+    "directory": "corpora",
+    "url": "https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/stopwords.zip",
+    "sha256": "48c0e52d8b52546e827f53761fb30300c0ab94f70660d28bd65ba0a86270946b",
+    "filename": "stopwords.zip"
+  }
+]

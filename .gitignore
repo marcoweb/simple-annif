@@ -1,0 +1,8 @@
+/target
+/dist
+/runtime
+/workspace
+.env
+.env.*
+!.env.example
+__pycache__/
