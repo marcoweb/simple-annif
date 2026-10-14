@@ -2,6 +2,7 @@ pub mod diagnostics;
 #[cfg(test)]
 mod integration_tests;
 pub mod processing;
+pub mod project_creation;
 pub mod projects;
 pub mod runtime;
 pub mod training;

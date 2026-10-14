@@ -6,6 +6,52 @@ use anyhow::{Context, Result};
 use std::path::PathBuf;
 
 #[test]
+#[ignore = "requer ANNIF_TEST_PACKAGE para validar os três métodos criados pelo formulário"]
+fn form_projects_with_bundled_annif() -> Result<()> {
+    use crate::services::project_creation::{self, Draft};
+    let package = PathBuf::from(std::env::var("ANNIF_TEST_PACKAGE")?);
+    let temporary = TestDirectory::new()?;
+    let mut runtime = ApplicationRuntime::from_application_dir(&package, false)?;
+    runtime.configure_workspace(temporary.path())?;
+    let draft = Draft {
+        name: "Agricultura em inglês".into(),
+        id: "agricultura-tfidf".into(),
+        language: "en".into(),
+        vocab: "nalt".into(),
+        ..Default::default()
+    };
+    project_creation::create(&runtime, &draft)?;
+    project_creation::create(
+        &runtime,
+        &Draft {
+            id: "agricultura-mllm".into(),
+            backend: "mllm".into(),
+            ..draft.clone()
+        },
+    )?;
+    project_creation::create(
+        &runtime,
+        &Draft {
+            id: "agricultura-ensemble".into(),
+            backend: "ensemble".into(),
+            sources: vec!["agricultura-tfidf".into(), "agricultura-mllm".into()],
+            ..draft
+        },
+    )?;
+    let listed = runtime.list_projects()?;
+    assert_eq!(listed.len(), 3);
+    for backend in ["tfidf", "mllm", "ensemble"] {
+        assert!(
+            listed
+                .iter()
+                .any(|p| p.backend == backend && p.name == "Agricultura em inglês")
+        );
+    }
+    assert_eq!(runtime.list_vocabularies()?[0].id, "nalt");
+    Ok(())
+}
+
+#[test]
 #[ignore = "requer ANNIF_TEST_PACKAGE, ANNIF_TEST_CORPUS e ANNIF_TEST_NALT_MODELS"]
 fn real_nalt_corpus_with_bundled_annif() -> Result<()> {
     let package = PathBuf::from(std::env::var("ANNIF_TEST_PACKAGE")?);

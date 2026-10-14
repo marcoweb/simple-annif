@@ -14,6 +14,9 @@ pub struct ProjectsUi {
     projects_toml_content: String,
     is_editing_toml: bool,
     save_status: Option<String>,
+    is_creating: bool,
+    form: super::project_form::ProjectForm,
+    created_notice: Option<String>,
 }
 
 impl Default for ProjectsUi {
@@ -25,6 +28,9 @@ impl Default for ProjectsUi {
             projects_toml_content: "".to_string(),
             is_editing_toml: false,
             save_status: None,
+            is_creating: false,
+            form: Default::default(),
+            created_notice: None,
         }
     }
 }
@@ -44,25 +50,54 @@ impl ProjectsUi {
         ui.add_space(10.0);
 
         ui.add_enabled_ui(!self.is_busy(), |ui| {
-            ui.horizontal(|ui| {
+            ui.horizontal_wrapped(|ui| {
                 if ui
-                    .selectable_label(!self.is_editing_toml, "Lista de Projetos")
+                    .selectable_label(
+                        !self.is_editing_toml && !self.is_creating,
+                        "Lista de Projetos",
+                    )
                     .clicked()
                 {
                     self.is_editing_toml = false;
+                    self.is_creating = false;
                 }
                 if ui
-                    .selectable_label(self.is_editing_toml, "Editar projects.toml")
+                    .selectable_label(self.is_creating, "Novo projeto")
+                    .clicked()
+                {
+                    self.is_creating = true;
+                    self.is_editing_toml = false;
+                    self.created_notice = None;
+                    self.form.refresh(runtime);
+                }
+                if ui
+                    .selectable_label(self.is_editing_toml, "Avançado: editar TOML")
                     .clicked()
                 {
                     self.is_editing_toml = true;
+                    self.is_creating = false;
                 }
             });
         });
 
         ui.separator();
 
-        if self.is_editing_toml {
+        if self.is_creating {
+            if let Some(project) = self.form.ui(ui, runtime) {
+                self.created_notice = Some(format!(
+                    "Projeto {} criado e selecionado. {}",
+                    project.name,
+                    if project.backend == "ensemble" {
+                        "Use Suggest depois de treinar os projetos fonte."
+                    } else {
+                        "Próximo passo: carregue o vocabulário na aba Vocabulários e depois treine o projeto."
+                    }
+                ));
+                *selected_project = Some(project);
+                self.is_creating = false;
+                self.load_projects(runtime);
+            }
+        } else if self.is_editing_toml {
             self.ui_edit_toml(ui, runtime);
             if self.projects.lock().unwrap().is_none() {
                 *selected_project = None;
@@ -79,6 +114,10 @@ impl ProjectsUi {
         runtime: &ApplicationRuntime,
     ) {
         let is_loading = *self.is_loading.lock().unwrap();
+        if let Some(notice) = &self.created_notice {
+            ui.colored_label(egui::Color32::from_rgb(21, 105, 46), notice);
+            ui.add_space(8.0);
+        }
 
         if ui
             .add_enabled(!is_loading, egui::Button::new("Atualizar Lista via Annif"))
@@ -111,6 +150,7 @@ impl ProjectsUi {
                 }
                 if projects.is_empty() {
                     ui.label("Nenhum projeto encontrado.");
+                    ui.label("Use Novo projeto para começar, sem precisar escrever TOML.");
                 } else {
                     egui::ScrollArea::vertical()
                         .max_height(200.0)

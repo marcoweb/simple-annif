@@ -1,10 +1,30 @@
 # Usar o Annif Manager
 
-## Primeiro projeto
+## Criar um projeto pelo formulário
+
+1. Em **Projetos → Novo projeto**, informe um nome. O identificador é sugerido
+   automaticamente e pode ser alterado.
+2. Escolha o idioma dos documentos e informe o ID do vocabulário, como `nalt`.
+   Se já houver vocabulários configurados, escolha um na lista de existentes.
+3. Escolha **TF-IDF** ou **MLLM** e clique em **Criar projeto**. A aplicação salva
+   um novo arquivo no workspace, atualiza a lista e seleciona o projeto criado.
+4. Em **Vocabulários**, carregue o arquivo correspondente ao ID informado.
+   Depois vá a **Treinamento** e, ao concluir, a **Suggest**.
+
+Para criar um **Ensemble**, escolha pelo menos dois projetos TF-IDF/MLLM com o
+mesmo idioma e vocabulário. Os pesos começam iguais. Treine as fontes antes
+de executar Suggest; não é necessário treinar o Ensemble separadamente.
+
+O formulário não sobrescreve projetos existentes. Identificadores repetidos
+são rejeitados. Outros idiomas, parâmetros e pesos podem ser configurados em
+**Avançado: editar TOML**. Workspaces antigos com arquivos `.cfg` precisam ser
+convertidos para TOML antes de usar o formulário.
+
+## Experimentar com os exemplos incluídos
 
 1. Extraia todo o ZIP e abra `AnnifManager.exe`. Em Diagnóstico, clique em
    **Verificar ambiente**. Python e Annif devem apresentar código zero.
-2. Em Projetos → **Editar projects.toml**, clique em **Inserir exemplo
+2. Em Projetos → **Avançado: editar TOML**, clique em **Inserir exemplo
    TF-IDF / MLLM / Ensemble** e depois **Salvar Alterações**. No pacote,
    o caminho inicial é `workspace/projects/projects.toml`. O exemplo só pode
    ser inserido quando o editor está vazio, para preservar suas alterações.

@@ -84,7 +84,8 @@ como falha nessas operações. Ainda não há timeout ou cancelamento de process
 
 Os fluxos existentes foram corrigidos e verificados com o Annif incorporado:
 
-- Projetos: criação/edição de TOML, validação antes de salvar e listagem com
+- Projetos: formulário Novo projeto com nome, ID sugerido, idioma, vocabulário
+  e método; fontes compatíveis para Ensemble; editor TOML avançado e listagem com
   nomes e backends reais obtidos por `show-project`.
 - Vocabulários: idioma para TSV, suporte do Annif a RDF/SKOS e rejeição clara
   de páginas HTML salvas como arquivos de vocabulário.
@@ -101,9 +102,9 @@ completo. Os fluxos principais passaram pela UI nativa na máquina de build:
 carga TSV/RDF, treinamento TF-IDF/MLLM, Suggest e exportação pelo diálogo Windows.
 Veja [o relatório da interface](packaging/validation-ui-windows.json).
 
-O **ZIP completo Windows x64** foi compilado em release em 8 de outubro de
+O **ZIP completo Windows x64** foi compilado em release em 14 de outubro de
 2026, com Python 3.13.16, Annif 1.4.2, dependências e dados linguísticos.
-Formatação, check, Clippy, 16 testes Rust e três testes Python passaram.
+Formatação, check, Clippy, 18 testes Rust e três testes Python passaram.
 O recebimento de resultados e logs continua ao trocar de aba, liberando
 as ações ao terminar. Suggest e treinamento identificam o projeto do resultado.
 Para preparar uma amostra real de agricultura/NALT, veja

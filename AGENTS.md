@@ -7,8 +7,14 @@ vocabulários, treinamento, Suggest e exportação JSON. Consulte `README.md` e
 `packaging/GUIA-USO.md` para os fluxos e exemplos agora incluídos no ZIP.
 
 Artefato: `dist/AnnifManager-win64.zip`; SHA-256:
-`729f35f2930c3103fd4dd3bb68365ecbafaaa1cde6f2a78093512c531682596b`.
+`5e03c01a5a127946d57c767762e48522c8db09e8354b2c7571aa738d9debfd30`.
 Relatório: `packaging/validation-windows.json`.
+Nova criação em Projetos → Novo projeto: formulário com nome, ID sugerido,
+idioma pt/en/es, vocabulário e método. Ensemble seleciona fontes compatíveis.
+Cada criação usa um novo TOML, sem sobrescrever projetos existentes; a lista
+é atualizada e o projeto selecionado automaticamente. Editor TOML preservado
+em Avançado. Passaram testes de validação, integração Annif e criação nativa
+dos três métodos. Instalado com backup `AnnifManager.before-project-form.exe`.
 Vocabulários agora oferece **Atualizar vocabulários** e seleção dos IDs reais
 de `list-vocabs`, com estado, assuntos e idiomas da última consulta. Atualizar
 a lista após salvar projetos ou carregar arquivos. Passou consulta via
@@ -29,7 +35,7 @@ Passou `real_nalt_corpus_with_bundled_annif`: TF-IDF e MLLM treinados; cinco
 documentos em cada um dos três backends, 15 resultados JSON. Duração total
 379,97 s; ver `packaging/validation-corpus-nalt.json`. O teste é funcional,
 pelos serviços com runtime incorporado; não mede qualidade nem valida a UI.
-Passaram fmt/check/Clippy, 16 testes Rust e três testes Python. O teste Rust
+Passaram fmt/check/Clippy, 18 testes Rust e três testes Python. O teste Rust
 ignorado por padrão `existing_workflows_with_bundled_annif` foi executado
 separadamente com `ANNIF_TEST_PACKAGE` e passou. Ele usa workspace temporário;
 não testar operações destrutivas sobre dados do usuário.
@@ -42,7 +48,7 @@ pela UI nativa na máquina de build; ver `packaging/validation-ui-windows.json`.
 Campos de texto aceitam SetValue da acessibilidade Windows e respeitam o estado
 desabilitado, coberto por teste egui. A troca de workspace, a rejeição de destino
 em runtime e a abertura release sem runtime também passaram pela UI.
-Executável atual: SHA-256 `33f7fbd34f87403acaa3a425b7553c1c70ce32c80742b12169c95893106c3ee0`.
+Executável atual: SHA-256 `8af04c3953a90512e54e23fd1b6f55566d4363b29534d530a6c53e8b32d4983c`.
 Instalação em D:/AnnifManager atualizada com backup
 `AnnifManager.before-accessible-input.exe`; dados preservados.
 O usuário pediu versionamento contínuo: fazer commits locais dos marcos

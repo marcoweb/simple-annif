@@ -79,10 +79,10 @@
     "cargo_check_locked": "passed",
     "cargo_clippy_all_targets_deny_warnings": "passed",
     "cargo_test_locked": {
-      "passed": 16,
+      "passed": 18,
       "failed": 0,
-      "ignored": 3,
-      "ignored_reason": "3 opt-in runtime integrations; real corpus integration passed separately on 2026-10-08, previous RDF and basic integrations passed as recorded"
+      "ignored": 4,
+      "ignored_reason": "4 opt-in runtime tests; form_projects_with_bundled_annif passed separately; earlier integrations retained in reports"
     },
     "packaging_unittest": {
       "passed": 3,
@@ -106,8 +106,8 @@
   },
   "runtime_only": false,
   "artifact": "dist/AnnifManager-win64.zip",
-  "artifact_size_bytes": 171636772,
-  "artifact_sha256": "729f35f2930c3103fd4dd3bb68365ecbafaaa1cde6f2a78093512c531682596b",
+  "artifact_size_bytes": 171695079,
+  "artifact_sha256": "5e03c01a5a127946d57c767762e48522c8db09e8354b2c7571aa738d9debfd30",
   "artifact_hash_check": "passed_independent_Get-FileHash_matches_sidecar",
   "pe_inspection": {
     "tool": "dumpbin 14.50.35726.0",
@@ -201,8 +201,8 @@
   },
   "local_installation_update": {
     "path": "D:/AnnifManager/AnnifManager.exe",
-    "backup": "D:/AnnifManager/AnnifManager.before-accessible-input.exe",
-    "sha256": "33f7fbd34f87403acaa3a425b7553c1c70ce32c80742b12169c95893106c3ee0",
+    "backup": "D:/AnnifManager/AnnifManager.before-project-form.exe",
+    "sha256": "8af04c3953a90512e54e23fd1b6f55566d4363b29534d530a6c53e8b32d4983c",
     "scope": "executable only; runtime and workspace preserved",
     "hash_check": "passed"
   },
@@ -220,5 +220,16 @@
     "native_ui": "passed: refresh vocabulary, switch to Diagnostics, workspace actions enabled when completed",
     "result_provenance": "training and Suggest show original project ID",
     "package_verification": "8 commands passed; Python CLI network blocked"
+  },
+  "previous_project_form_artifact_sha256": "729f35f2930c3103fd4dd3bb68365ecbafaaa1cde6f2a78093512c531682596b",
+  "project_form": {
+    "status": "passed",
+    "unit_tests": "escaped names, existing-file preservation, invalid IDs, duplicate IDs, distinct compatible Ensemble sources",
+    "real_annif_integration": "all 3 generated project configurations listed with correct names/backends; vocabulary recognized",
+    "native_ui": "TF-IDF, MLLM and Ensemble created via Windows UIAutomation; automatic ID, selection and refreshed listing verified",
+    "screenshot": "target/formulario-projeto.png",
+    "executable_sha256": "8af04c3953a90512e54e23fd1b6f55566d4363b29534d530a6c53e8b32d4983c",
+    "runtime_verification": "8 commands passed; Python network blocked",
+    "limitations": "pt/en/es in form; other languages and parameters via TOML editor; legacy .cfg requires conversion before using form"
   }
 }
