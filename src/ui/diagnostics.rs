@@ -16,8 +16,10 @@ pub struct DiagnosticsUi {
 }
 
 impl DiagnosticsUi {
+    pub fn is_busy(&self) -> bool {
+        self.receiver.is_some()
+    }
     pub fn ui(&mut self, ui: &mut egui::Ui, runtime: &mut ApplicationRuntime) {
-        self.poll_results();
         let is_checking = self.receiver.is_some();
         ui.heading("Diagnóstico de Ambiente");
         ui.label(format!(
@@ -31,11 +33,11 @@ impl DiagnosticsUi {
                 ui.add_enabled_ui(!is_checking, |ui| {
                     ui.horizontal(|ui| {
                         ui.label("Executável Python:");
-                        ui.text_edit_singleline(&mut system.python_cmd);
+                        super::text_input(ui, &mut system.python_cmd);
                     });
                     ui.horizontal(|ui| {
                         ui.label("Executável Annif:");
-                        ui.text_edit_singleline(&mut system.annif_cmd);
+                        super::text_input(ui, &mut system.annif_cmd);
                     });
                 });
                 ui.label(
@@ -58,7 +60,7 @@ impl DiagnosticsUi {
                 ui.add_enabled_ui(!is_checking, |ui| {
                     ui.horizontal(|ui| {
                         ui.label("Workspace:");
-                        ui.text_edit_singleline(workspace);
+                        super::text_input(ui, workspace);
                         apply = ui.button("Aplicar workspace").clicked();
                     });
                 });
@@ -119,7 +121,7 @@ impl DiagnosticsUi {
         });
     }
 
-    fn poll_results(&mut self) {
+    pub fn poll_results(&mut self) {
         let Some(receiver) = &self.receiver else {
             return;
         };

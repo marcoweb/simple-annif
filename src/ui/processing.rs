@@ -21,15 +21,21 @@ pub struct ProcessingUi {
 }
 
 impl ProcessingUi {
+    #[cfg(test)]
+    pub(crate) fn completed_for_test() -> Self {
+        let (tx, rx) = mpsc::channel();
+        tx.send(Event::Error("erro de teste preservado".into()))
+            .unwrap();
+        Self {
+            receiver: Some(rx),
+            ..Default::default()
+        }
+    }
+
     pub fn is_busy(&self) -> bool {
         self.receiver.is_some()
     }
-    pub fn ui(
-        &mut self,
-        ui: &mut egui::Ui,
-        selected_project: &Option<Project>,
-        runtime: &ApplicationRuntime,
-    ) {
+    pub fn poll_results(&mut self) {
         if let Some(rx) = &self.receiver {
             loop {
                 match rx.try_recv() {
@@ -43,6 +49,14 @@ impl ProcessingUi {
                 }
             }
         }
+    }
+
+    pub fn ui(
+        &mut self,
+        ui: &mut egui::Ui,
+        selected_project: &Option<Project>,
+        runtime: &ApplicationRuntime,
+    ) {
         ui.heading("Sugestões de assuntos");
         let Some(project) = selected_project else {
             ui.label("Selecione um projeto na aba Projetos.");
@@ -123,6 +137,7 @@ impl ProcessingUi {
                 for (index, result) in self.results.iter().enumerate() {
                     ui.separator();
                     ui.label(&result.path);
+                    ui.label(format!("Projeto do resultado: {}", result.project_id));
                     if let Some(error) = &result.error {
                         ui.colored_label(ui.visuals().error_fg_color, error);
                     } else {

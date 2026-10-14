@@ -90,6 +90,58 @@ fn parse_project(text: &str) -> Result<Project> {
     })
 }
 
+pub fn list_vocabularies(command: Command) -> Result<Vec<super::Vocabulary>> {
+    parse_vocabularies(&ensure_success(run(command)?)?.stdout)
+}
+
+fn parse_vocabularies(text: &str) -> Result<Vec<super::Vocabulary>> {
+    anyhow::ensure!(
+        text.lines()
+            .next()
+            .is_some_and(|line| line.starts_with("Vocabulary ID")),
+        "Formato inesperado em list-vocabs: {text}"
+    );
+    text.lines()
+        .skip(2)
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| {
+            // Read from the right: an initialized vocabulary can have no language tags.
+            let mut fields = line.trim_end().rsplitn(2, char::is_whitespace);
+            let loaded = match fields.next() {
+                Some("True") => true,
+                Some("False") => false,
+                _ => anyhow::bail!("Estado inválido em list-vocabs: {line}"),
+            };
+            let rest = fields.next().context("Vocabulário incompleto")?.trim_end();
+            let (identity, size) = rest
+                .rsplit_once(char::is_whitespace)
+                .context("Tamanho ausente")?;
+            let size = if size == "-" {
+                None
+            } else {
+                Some(size.parse::<usize>()?)
+            };
+            let mut identity = identity.split_whitespace();
+            let id = identity.next().context("ID ausente")?.to_owned();
+            let languages = identity
+                .next()
+                .filter(|value| *value != "-")
+                .map(|value| value.split(',').map(str::to_owned).collect())
+                .unwrap_or_default();
+            anyhow::ensure!(
+                identity.next().is_none(),
+                "Linha inválida em list-vocabs: {line}"
+            );
+            Ok(super::Vocabulary {
+                id,
+                languages,
+                size,
+                loaded,
+            })
+        })
+        .collect()
+}
+
 fn read_logs(
     stream: impl Read,
     sender: crossbeam_channel::Sender<String>,
@@ -190,6 +242,21 @@ mod tests {
 #[cfg(test)]
 mod parsing_tests {
     use super::*;
+    #[test]
+    fn vocabulary_table_handles_unloaded_multilingual_and_untagged() -> Result<()> {
+        let items = parse_vocabularies(
+            "Vocabulary ID   Languages   Size   Loaded\n------------------------------------------------\nnalt            en,es       76691  True\npendente        -           -      False\nsem-idioma                  1      True\n",
+        )?;
+        assert_eq!(items[0].languages, ["en", "es"]);
+        assert_eq!(items[0].size, Some(76691));
+        assert!(!items[1].loaded);
+        assert_eq!(items[1].size, None);
+        assert!(items[2].languages.is_empty());
+        assert!(parse_vocabularies("erro").is_err());
+        assert!(parse_vocabularies("Vocabulary ID\n---\nincompleto\n").is_err());
+        assert!(parse_vocabularies("Vocabulary ID   Languages   Size   Loaded\n---\n")?.is_empty());
+        Ok(())
+    }
     #[test]
     fn project_details_keep_names_and_real_backend() -> Result<()> {
         let project = parse_project(

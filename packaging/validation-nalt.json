@@ -1,0 +1,49 @@
+{
+  "source": "https://github.com/marcoweb/annif-experiments/raw/refs/heads/main/agriculture-en/raw-files/vocabulary/nalt-full_dwn_20240716.rdf",
+  "sha256": "71a3e2e5ca84e5f680e1ebbf3fa7a5892415c58de716334b5add27b54af6d168",
+  "size_bytes": 95002382,
+  "network": "blocked_in_python_cli",
+  "commands": [
+    {
+      "command": "load-vocab",
+      "exit_code": 0,
+      "stdout": "Loading vocabulary from SKOS file C:\\Users\\marco\\simple-annif\\target\\nalt-input\\nalt.rdf ...\n",
+      "stderr": "creating subject index\nsaving vocabulary into SKOS file C:\\Users\\marco\\simple-annif\\target\\nalt-input\\workspace-final\\models\\vocabs\\nalt\\subjects.ttl\n"
+    },
+    {
+      "command": "list-vocabs",
+      "exit_code": 0,
+      "stdout": "Vocabulary ID  Languages  Size   Loaded\n---------------------------------------\nnalt           en,es      76691  True  \n",
+      "stderr": ""
+    }
+  ],
+  "date": "2026-10-07",
+  "environment": "native_windows_build_machine",
+  "python": "3.13.16",
+  "annif": "1.4.2",
+  "loaded_subjects": 76691,
+  "languages": [
+    "en",
+    "es"
+  ],
+  "status": "passed",
+  "training": "not_run_user_corpus_not_provided",
+  "ui_load_test": "not_run_for_NALT",
+  "workspace": "target/nalt-input/workspace-final",
+  "rdf": "target/nalt-input/nalt.rdf",
+  "rust_ui_service_load": {
+    "status": "passed",
+    "test": "rdf_vocabulary_through_ui_service",
+    "source": "target/nalt-input/nalt.rdf",
+    "exit_code": 0,
+    "csv_lines_including_header": 76692,
+    "duration_seconds": 218.78,
+    "outputs_verified": [
+      "subjects.csv",
+      "subjects.ttl",
+      "subjects.dump.gz"
+    ],
+    "network": "not blocked in Rust test; original CLI test above blocked connections",
+    "native_ui_click_test": "not_run"
+  }
+}

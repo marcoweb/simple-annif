@@ -43,19 +43,21 @@ impl ProjectsUi {
         ui.heading("Projetos Annif");
         ui.add_space(10.0);
 
-        ui.horizontal(|ui| {
-            if ui
-                .selectable_label(!self.is_editing_toml, "Lista de Projetos")
-                .clicked()
-            {
-                self.is_editing_toml = false;
-            }
-            if ui
-                .selectable_label(self.is_editing_toml, "Editar projects.toml")
-                .clicked()
-            {
-                self.is_editing_toml = true;
-            }
+        ui.add_enabled_ui(!self.is_busy(), |ui| {
+            ui.horizontal(|ui| {
+                if ui
+                    .selectable_label(!self.is_editing_toml, "Lista de Projetos")
+                    .clicked()
+                {
+                    self.is_editing_toml = false;
+                }
+                if ui
+                    .selectable_label(self.is_editing_toml, "Editar projects.toml")
+                    .clicked()
+                {
+                    self.is_editing_toml = true;
+                }
+            });
         });
 
         ui.separator();
@@ -182,7 +184,7 @@ impl ProjectsUi {
         });
         ui.horizontal(|ui| {
             ui.label("Arquivo projects.toml:");
-            ui.text_edit_singleline(&mut self.projects_toml_path);
+            super::text_input(ui, &mut self.projects_toml_path);
             if ui.button("Procurar...").clicked()
                 && let Some(path) = FileDialog::new().add_filter("TOML", &["toml"]).pick_file()
             {
@@ -212,6 +214,7 @@ impl ProjectsUi {
 
             ui.add_space(10.0);
 
+            let mut save_requested = ui.button("Salvar Alterações").clicked();
             if ui.button("Salvar como...").clicked()
                 && let Some(path) = FileDialog::new()
                     .add_filter("TOML", &["toml"])
@@ -219,8 +222,9 @@ impl ProjectsUi {
                     .save_file()
             {
                 self.projects_toml_path = path.display().to_string();
+                save_requested = true;
             }
-            if ui.button("Salvar Alterações").clicked() {
+            if save_requested {
                 match crate::services::projects::save_for_runtime(
                     runtime,
                     std::path::Path::new(&self.projects_toml_path),

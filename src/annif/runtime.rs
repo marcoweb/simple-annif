@@ -17,6 +17,7 @@ pub trait AnnifRuntime: Send + Sync {
 
     // MVP 1
     fn list_projects(&self) -> Result<Vec<Project>>;
+    fn list_vocabularies(&self) -> Result<Vec<super::Vocabulary>>;
 
     /// Executes a command and returns the progressive output via channels,
     /// along with a handle to wait for the final result.

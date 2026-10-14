@@ -9,3 +9,4 @@ pub use embedded_runtime::EmbeddedWindowsRuntime;
 pub use project::Project;
 pub use runtime::{AnnifRuntime, ProcessResult};
 pub use system_runtime::SystemRuntime;
+pub use vocabulary::Vocabulary;

@@ -193,6 +193,10 @@ impl AnnifRuntime for EmbeddedWindowsRuntime {
         commands::list_projects(|args| self.annif_command(args))
     }
 
+    fn list_vocabularies(&self) -> Result<Vec<super::Vocabulary>> {
+        commands::list_vocabularies(self.annif_command(&["list-vocabs"])?)
+    }
+
     fn train(
         &self,
         project_id: &str,

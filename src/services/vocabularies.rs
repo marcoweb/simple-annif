@@ -2,6 +2,10 @@ use crate::annif::{AnnifRuntime, ProcessResult};
 use anyhow::{Context, Result};
 use std::{path::Path, thread::JoinHandle};
 
+pub fn list(runtime: &impl AnnifRuntime) -> Result<Vec<crate::annif::Vocabulary>> {
+    runtime.list_vocabularies()
+}
+
 pub fn start(
     runtime: &impl AnnifRuntime,
     id: &str,
@@ -23,9 +27,34 @@ pub fn start(
         .canonicalize()
         .context("Não foi possível acessar o vocabulário")?;
     validate_source(&path)?;
-    runtime.load_vocab(id.trim(), &path.to_string_lossy(), language.trim(), logs)
+    runtime.load_vocab(
+        id.trim(),
+        &vocabulary_argument(&path)?,
+        language.trim(),
+        logs,
+    )
 }
 use std::io::Read;
+
+// canonicalize() valida o arquivo, mas no Windows devolve caminhos verbatim.
+// O RDFLib converte a origem RDF em URI e não aceita esse prefixo Win32.
+fn vocabulary_argument(path: &Path) -> Result<String> {
+    let text = path
+        .to_str()
+        .context("Caminho do vocabulário não é Unicode válido")?;
+    #[cfg(windows)]
+    {
+        if let Some(unc) = text.strip_prefix(r"\\?\UNC\") {
+            return Ok(format!(r"\\{unc}"));
+        }
+        if let Some(disk) = text.strip_prefix(r"\\?\")
+            && disk.as_bytes().get(1) == Some(&b':')
+        {
+            return Ok(disk.to_owned());
+        }
+    }
+    Ok(text.to_owned())
+}
 
 fn validate_source(path: &Path) -> Result<()> {
     let mut prefix = [0u8; 1024];
@@ -42,6 +71,25 @@ fn validate_source(path: &Path) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(windows)]
+    #[test]
+    fn vocabulary_paths_preserve_disk_unc_and_unicode_without_verbatim_prefix() -> Result<()> {
+        for (source, expected) in [
+            (
+                r"\\?\C:\vocabulários com espaços\nalt #100%.rdf",
+                r"C:\vocabulários com espaços\nalt #100%.rdf",
+            ),
+            (
+                r"\\?\UNC\servidor\pasta\ação.rdf",
+                r"\\servidor\pasta\ação.rdf",
+            ),
+            (r"C:\dados\nalt.rdf", r"C:\dados\nalt.rdf"),
+        ] {
+            assert_eq!(vocabulary_argument(Path::new(source))?, expected);
+        }
+        Ok(())
+    }
+
     #[test]
     fn rejects_html_saved_with_rdf_extension() -> Result<()> {
         let dir = crate::test_support::TestDirectory::new()?;

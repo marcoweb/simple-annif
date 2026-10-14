@@ -82,6 +82,9 @@ impl AnnifRuntime for ApplicationRuntime {
     fn list_projects(&self) -> Result<Vec<Project>> {
         self.backend()?.list_projects()
     }
+    fn list_vocabularies(&self) -> Result<Vec<crate::annif::Vocabulary>> {
+        self.backend()?.list_vocabularies()
+    }
     fn train(
         &self,
         project_id: &str,

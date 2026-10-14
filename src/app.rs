@@ -51,10 +51,20 @@ impl eframe::App for AnnifManagerApp {
 
 impl AnnifManagerApp {
     fn show(&mut self, ui: &mut egui::Ui) {
+        // Workers must be collected even when the user has switched tabs.
+        self.vocabularies_ui.poll_results();
+        self.processing_ui.poll_results();
+        self.training_ui.poll_results();
+        self.diagnostics_ui.poll_results();
         let busy = self.projects_ui.is_busy()
             || self.training_ui.is_busy()
             || self.vocabularies_ui.is_busy()
-            || self.processing_ui.is_busy();
+            || self.processing_ui.is_busy()
+            || self.diagnostics_ui.is_busy();
+        if busy {
+            ui.ctx()
+                .request_repaint_after(std::time::Duration::from_millis(100));
+        }
         egui::Panel::top("top_panel").show(ui, |ui| {
             egui::menu::MenuBar::new().ui(ui, |ui| {
                 ui.selectable_value(&mut self.selected_tab, Tab::Projects, "Projetos");
@@ -91,7 +101,7 @@ impl AnnifManagerApp {
             }
             Tab::Diagnostics => {
                 let before = self.runtime.context_key();
-                ui.add_enabled_ui(!busy, |ui| {
+                ui.add_enabled_ui(!busy || self.diagnostics_ui.is_busy(), |ui| {
                     self.diagnostics_ui.ui(ui, &mut self.runtime);
                 });
                 if before != self.runtime.context_key() {
@@ -112,6 +122,24 @@ impl AnnifManagerApp {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn finished_workers_release_other_tabs_without_reopening_origin() {
+        let ctx = egui::Context::default();
+        let mut app = AnnifManagerApp {
+            runtime: ApplicationRuntime::Unavailable("Runtime de teste".into()),
+            selected_tab: Tab::Diagnostics,
+            vocabularies_ui: VocabulariesUi::completed_for_test(),
+            processing_ui: ProcessingUi::completed_for_test(),
+            ..Default::default()
+        };
+        assert!(app.vocabularies_ui.is_busy());
+        assert!(app.processing_ui.is_busy());
+        let mut output = ctx.run_ui(egui::RawInput::default(), |ui| app.show(ui));
+        output.textures_delta.clear();
+        assert!(!app.vocabularies_ui.is_busy());
+        assert!(!app.processing_ui.is_busy());
+        assert!(app.selected_tab == Tab::Diagnostics);
+    }
     #[test]
     fn every_tab_paints_a_light_content_background() {
         let ctx = egui::Context::default();

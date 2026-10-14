@@ -38,6 +38,10 @@ impl AnnifRuntime for SystemRuntime {
         commands::list_projects(|args| Ok(self.annif_command(args)))
     }
 
+    fn list_vocabularies(&self) -> Result<Vec<super::Vocabulary>> {
+        commands::list_vocabularies(self.annif_command(&["list-vocabs"]))
+    }
+
     fn train(
         &self,
         project_id: &str,

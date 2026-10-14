@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 pub struct TrainingUi {
+    result_project: Option<String>,
     data_path: String,
     logs: Arc<Mutex<Vec<String>>>,
     is_training: Arc<Mutex<bool>>,
@@ -15,6 +16,7 @@ pub struct TrainingUi {
 impl Default for TrainingUi {
     fn default() -> Self {
         Self {
+            result_project: None,
             data_path: "".to_string(),
             logs: Arc::new(Mutex::new(Vec::new())),
             is_training: Arc::new(Mutex::new(false)),
@@ -25,6 +27,13 @@ impl Default for TrainingUi {
 }
 
 impl TrainingUi {
+    pub fn poll_results(&mut self) {
+        if let Some(rx) = &self.log_receiver {
+            while let Ok(log) = rx.try_recv() {
+                self.logs.lock().unwrap().push(log);
+            }
+        }
+    }
     pub fn is_busy(&self) -> bool {
         *self.is_training.lock().unwrap()
     }
@@ -60,7 +69,7 @@ impl TrainingUi {
 
         ui.horizontal(|ui| {
             ui.label("Corpus de treinamento:");
-            ui.text_edit_singleline(&mut self.data_path);
+            super::text_input(ui, &mut self.data_path);
         });
         ui.horizontal(|ui| {
             if ui.button("Selecionar pasta...").clicked()
@@ -100,11 +109,8 @@ impl TrainingUi {
             });
         }
 
-        // Ler novos logs do channel
-        if let Some(rx) = &self.log_receiver {
-            while let Ok(log) = rx.try_recv() {
-                self.logs.lock().unwrap().push(log);
-            }
+        if let Some(project) = &self.result_project {
+            ui.label(format!("Logs e resultado do projeto: {project}"));
         }
 
         ui.heading("Logs");
@@ -141,6 +147,7 @@ impl TrainingUi {
     }
 
     fn start_training(&mut self, project_id: &str, runtime: &ApplicationRuntime) {
+        self.result_project = Some(project_id.to_owned());
         *self.is_training.lock().unwrap() = true;
         self.logs.lock().unwrap().clear();
         *self.result.lock().unwrap() = None;
