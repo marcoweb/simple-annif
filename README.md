@@ -82,21 +82,42 @@ Logs progressivos de treinamento e carga de vocabulário são capturados no
 resultado final, além de enviados à UI. Uma saída diferente de zero é tratada
 como falha nessas operações. Ainda não há timeout ou cancelamento de processos.
 
-As telas de projetos, vocabulários, treinamento e suggest já existiam e foram
-preservadas. Seus formatos de entrada e saída ainda precisam de validação com
-a versão real do Annif escolhida para distribuição; o parser de projetos,
-em particular, é provisório. A camada de serviços desses fluxos será organizada
-nas próximas etapas.
+Os fluxos existentes foram corrigidos e verificados com o Annif incorporado:
 
-O **ZIP completo Windows x64** foi compilado em release em 7 de outubro de
+- Projetos: criação/edição de TOML, validação antes de salvar e listagem com
+  nomes e backends reais obtidos por `show-project`.
+- Vocabulários: idioma para TSV, suporte do Annif a RDF/SKOS e rejeição clara
+  de páginas HTML salvas como arquivos de vocabulário.
+- Treinamento: seleção de arquivo ou pasta, logs progressivos e orientação
+  para Ensemble, que utiliza os modelos dos projetos fonte.
+- Suggest: seleção de arquivos ou pastas TXT, resultados por documento com
+  URI, assunto e score, falhas explícitas e exportação JSON estruturada.
+- Troca de workspace: limpa seleções e resultados anteriores; operações
+  concorrentes que alteram o contexto são bloqueadas durante o processamento.
+
+O pacote inclui `GUIA-USO.md` e `examples/` com dados didáticos e configuração
+NALT em inglês. Consulte o [guia](packaging/GUIA-USO.md) para executar o fluxo
+completo. Os fluxos principais passaram pela UI nativa na máquina de build:
+carga TSV/RDF, treinamento TF-IDF/MLLM, Suggest e exportação pelo diálogo Windows.
+Veja [o relatório da interface](packaging/validation-ui-windows.json).
+
+O **ZIP completo Windows x64** foi compilado em release em 8 de outubro de
 2026, com Python 3.13.16, Annif 1.4.2, dependências e dados linguísticos.
-Formatação, check, Clippy, seis testes Rust e três testes Python passaram.
+Formatação, check, Clippy, 16 testes Rust e três testes Python passaram.
+O recebimento de resultados e logs continua ao trocar de aba, liberando
+as ações ao terminar. Suggest e treinamento identificam o projeto do resultado.
+Para preparar uma amostra real de agricultura/NALT, veja
+[TESTE-CORPUS-NALT.md](packaging/TESTE-CORPUS-NALT.md).
+Em Vocabulários, **Atualizar vocabulários** consulta os IDs configurados e
+mostra o estado, a quantidade de assuntos e os idiomas da última consulta.
+Um teste adicional de integração com o runtime real foi executado separadamente
+e passou por projetos, vocabulário, treinamento, sugestões, exportação e workspace.
 A verificação CLI nativa passou na máquina de build, inclusive após extrair
 e mover o pacote entre caminhos com espaços e acentos: carga de vocabulário,
 treinamento TF-IDF/MLLM e suggest TF-IDF/MLLM/Ensemble com conexões bloqueadas.
 O [relatório Windows](packaging/validation-windows.json) registra o hash e
 os limites dessa validação; o relatório Wine anterior permanece preservado.
-**Os fluxos da UI e a execução em Windows limpo ainda não foram validados.**
+**A execução em Windows limpo ainda não foi validada; a portabilidade final permanece pendente.**
 Uma falha de abertura no driver AMD `atio6axx.dll` foi contornada restringindo
 a inicialização gráfica Windows a DirectX 12. O ZIP corrigido passou no teste
 de abertura e resposta da janela nesta máquina, sem configuração adicional.

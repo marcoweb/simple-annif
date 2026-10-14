@@ -1,30 +1,80 @@
 # Annif Manager — instruções para retomar no Windows
 
-Estado atualizado em 7 de outubro de 2026. O pacote completo foi compilado em
-Windows x64 e a verificação CLI passou na máquina de build, após extração e
-mudança de diretório. Formatação, check, Clippy, seis testes Rust e três testes
-Python passaram. Relatório: `packaging/validation-windows.json`.
+Estado atualizado em 14 de outubro de 2026. O escopo confirmado pelo usuário é
+concluir as funcionalidades atuais, sem adicionar histórico, avaliações ou SQLite.
+O pacote completo Windows x64 foi reconstruído com correções de projetos,
+vocabulários, treinamento, Suggest e exportação JSON. Consulte `README.md` e
+`packaging/GUIA-USO.md` para os fluxos e exemplos agora incluídos no ZIP.
+
 Artefato: `dist/AnnifManager-win64.zip`; SHA-256:
-`855b34e13b571510e61fb42236735e6d8dcee0ceb0e3619b3b539053917cd5a3`.
-Rust foi instalado no perfil do desenvolvedor; uv está em
-`target/build-tools/Scripts/`. Inclua esses diretórios no PATH da sessão para
-repetir a montagem. As versões fixadas foram preservadas. A inicialização gráfica Windows usa
-somente DirectX 12 após falha no driver AMD `atio6axx.dll` (`0xc0000005`).
-O ZIP corrigido abriu uma janela responsiva na máquina de build, sem override
-de ambiente; os fluxos da UI continuam pendentes. O teste de mudança de
-diretório foi executado no artefato anterior; consultar o relatório para escopo.
-A interface inicia em tema claro, com mensagens de sucesso em verde escuro
-e erros na cor semântica do tema. O ZIP foi recompilado e os checks e a
-verificação CLI passaram após essa mudança. Corrigido também o fundo preto:
-as abas agora são renderizadas dentro de um CentralPanel. Captura do ZIP
-extraído confirmou fundo claro e texto legível em Diagnóstico; demais abas
-e fluxos ainda precisam de revisão visual.
-A próxima tarefa é validar os fluxos da UI e o pacote em Windows 10/11 x64
-limpo. O usuário ainda não dispõe dessa máquina/VM; o roteiro está em
-`packaging/TESTE-WINDOWS-LIMPO.md`. Não considerar a portabilidade concluída.
-As seções abaixo preservam as decisões e o histórico da etapa Wine.
-Leia também `README.md`,
-`packaging/README.md` e `packaging/validation-wine.json` antes de alterar o código.
+`729f35f2930c3103fd4dd3bb68365ecbafaaa1cde6f2a78093512c531682596b`.
+Relatório: `packaging/validation-windows.json`.
+Vocabulários agora oferece **Atualizar vocabulários** e seleção dos IDs reais
+de `list-vocabs`, com estado, assuntos e idiomas da última consulta. Atualizar
+a lista após salvar projetos ou carregar arquivos. Passou consulta via
+UIAutomation em workspace NALT isolado; carga e consulta antes/depois passaram
+no teste integrado real. Instalado o executável atualizado em D:/AnnifManager,
+com backup `AnnifManager.before-vocab-list.exe`; dados preservados.
+Atualização posterior: resultados/logs são coletados mesmo com a aba de origem
+oculta; teste egui de regressão e UIAutomation de consulta em segundo plano
+passaram. Treinamento e Suggest identificam o projeto dos resultados. Instalado
+o novo executável com backup `AnnifManager.before-background-results.exe`.
+Corpus real indicado pelo usuário: `marcoweb/annif-experiments`, agricultura em
+inglês. Preparação reproduzível em `packaging/prepare_nalt_test_corpus.py`;
+roteiro `packaging/TESTE-CORPUS-NALT.md`. Amostra: 100 documentos de treinamento,
+cinco reservados para Suggest, somente título/resumo; 778 URIs NALT mapeadas.
+Os 394 descritores distintos sem correspondência foram registrados, não
+aproximados. Dados e relatório detalhado ficam em `target/corpus-validation`.
+Passou `real_nalt_corpus_with_bundled_annif`: TF-IDF e MLLM treinados; cinco
+documentos em cada um dos três backends, 15 resultados JSON. Duração total
+379,97 s; ver `packaging/validation-corpus-nalt.json`. O teste é funcional,
+pelos serviços com runtime incorporado; não mede qualidade nem valida a UI.
+Passaram fmt/check/Clippy, 16 testes Rust e três testes Python. O teste Rust
+ignorado por padrão `existing_workflows_with_bundled_annif` foi executado
+separadamente com `ANNIF_TEST_PACKAGE` e passou. Ele usa workspace temporário;
+não testar operações destrutivas sobre dados do usuário.
+
+A janela do ZIP extraído abriu responsiva e com fundo claro em Diagnóstico.
+O teste egui verifica o fundo claro das cinco abas. A criação/listagem de projetos
+passou via UIAutomation em um release intermediário. Os fluxos principais de
+vocabulário TSV/RDF, treinamento TF-IDF/MLLM, Suggest e exportação JSON passaram
+pela UI nativa na máquina de build; ver `packaging/validation-ui-windows.json`.
+Campos de texto aceitam SetValue da acessibilidade Windows e respeitam o estado
+desabilitado, coberto por teste egui. A troca de workspace, a rejeição de destino
+em runtime e a abertura release sem runtime também passaram pela UI.
+Executável atual: SHA-256 `33f7fbd34f87403acaa3a425b7553c1c70ce32c80742b12169c95893106c3ee0`.
+Instalação em D:/AnnifManager atualizada com backup
+`AnnifManager.before-accessible-input.exe`; dados preservados.
+O usuário pediu versionamento contínuo: fazer commits locais dos marcos
+validados, sem incluir artefatos, corpora ou dados do workspace. Primeiro marco
+registrado em `9280bd8`; não fazer push sem solicitação.
+O usuário ainda não dispõe de Windows limpo e fará esse teste posteriormente;
+roteiro em `packaging/TESTE-WINDOWS-LIMPO.md`. Não declarar portabilidade concluída.
+
+Preservar a inicialização Windows somente com DirectX 12 (o driver AMD
+`atio6axx.dll` falhava com `0xc0000005`), tema claro e CentralPanel envolvendo
+as abas. Rust fica no perfil do desenvolvedor; uv em `target/build-tools/Scripts/`.
+As versões fixadas foram preservadas.
+
+Corrigido WinError 123 na carga RDF: a canonicalização Rust gerava prefixo
+Windows verbatim que o RDFLib interpretava como URI incorreta. A camada de
+vocabulários preserva a validação canônica e converte o argumento para caminho
+Windows convencional, incluindo UNC. Teste RDF pequeno pelo mesmo serviço da
+UI passou com espaços, acentos, # e %. A validação CLI anterior não cobria
+essa conversão. O NALT completo também passou pelo serviço da UI (76.691
+assuntos, código zero, 218,78 s); ver `packaging/validation-nalt.json`.
+Atualizado somente `D:/AnnifManager/AnnifManager.exe`, com backup
+`AnnifManager.before-rdf-path-fix.exe`; runtime e workspace preservados.
+Executável avulso de atualização: `dist/AnnifManager.exe`.
+
+O arquivo NALT em Downloads indicado pelo usuário era HTML do GitHub, apesar
+da extensão RDF. O bruto foi obtido em `target/nalt-input/nalt.rdf` (não versionar).
+Carga NALT real passou: 76.691 assuntos, idiomas en/es. Relatório em
+`packaging/validation-nalt.json`; workspace em `target/nalt-input/workspace-final`.
+Há configuração em `packaging/examples/projects-nalt.toml`; o usuário indicou o corpus de agricultura em annif-experiments. Não confundir vocabulário com dados de treinamento.
+
+Leia também `README.md`, `packaging/README.md` e `packaging/validation-wine.json`
+antes de alterar o código. As seções abaixo preservam decisões e histórico.
 
 ## Objetivo e decisões que devem ser preservadas
 
@@ -65,10 +115,9 @@ de build do desenvolvedor não são requisitos da máquina de destino.
 - Logs progressivos são preservados no resultado final. Erros de treinamento
   e carga de vocabulário por código de saída diferente de zero são apresentados.
 - Não há timeout ou cancelamento de processos na aplicação.
-- As telas de projetos, vocabulários, treinamento e suggest já existiam e
-  foram preservadas. Seus fluxos ainda precisam de validação pela UI. O parser
-  da listagem de projetos é provisório; não considerar a integração pronta
-  apenas porque a CLI passou nos testes.
+- A lista usa list-projects para IDs e show-project para nome/backend. Suggest
+  interpreta URI/descritor/score e exporta JSON estruturado. O teste integrado
+  dos serviços e os fluxos principais pela UI nativa passaram na máquina de build.
 
 ## Arquivos essenciais para levar ao Windows
 

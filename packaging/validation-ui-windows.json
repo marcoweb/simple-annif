@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-14",
+  "environment": "native Windows build machine, x64, 25H2 26200.9457",
+  "executable_sha256": "33f7fbd34f87403acaa3a425b7553c1c70ce32c80742b12169c95893106c3ee0",
+  "automation": "Windows UIAutomation for egui; targeted Win32 file dialog controls; no global keyboard injection",
+  "isolation": "Separate workspaces under target; packaged runtime shared through a directory junction; user workspace untouched",
+  "dataset": "Bundled Portuguese examples; one additional small RDF with pt/en labels",
+  "checks": {
+    "project_editor_and_listing": "passed on intermediate release; final executable listing and selection passed",
+    "tsv_load": "passed on final executable",
+    "rdf_load": "passed on final executable; filename vocabulário #100%.rdf",
+    "training_tfidf_mllm": "passed on final executable in a fresh isolated workspace on 2026-10-14",
+    "suggest_tfidf_mllm_ensemble": "passed on intermediate release; Ensemble repeated on final executable",
+    "native_file_open_dialog": "passed on final executable",
+    "native_json_save_dialog": "passed on final executable; output read back and checked",
+    "json_contents": {
+      "project": "meu-ensemble",
+      "suggestions": 2,
+      "labels": [
+        "Computação",
+        "Jardinagem"
+      ],
+      "scores": "finite numeric values"
+    },
+    "workspace_inside_runtime": "rejected with clear error on final executable",
+    "workspace_change": "passed on final executable; directories created; prior project selection cleared",
+    "missing_runtime_release": "passed on final executable; explicit unavailable error, no system fallback",
+    "hidden_tab_completion": "passed native and headless regression",
+    "accessible_text_fields": "passed native; Unicode replacement and disabled controls covered by regression test"
+  },
+  "native_export": "target/Validacao UI completa/AnnifManager/examples/sugestoes.json",
+  "network": "not blocked for native GUI checks; CLI package verification separately blocked Python network",
+  "clean_windows": "pending; user will test later",
+  "limitations": [
+    "Not a clean-machine portability test",
+    "Not exhaustive dialog and error-path coverage",
+    "Full NALT tested through services; native RDF test uses a small vocabulary"
+  ],
+  "export_sha256": "8b9549bd5dbae422a9c3969389bf87ec22413b7f23270c0fa2fb55672376226b",
+  "status": "passed_main_workflows_on_build_machine"
+}

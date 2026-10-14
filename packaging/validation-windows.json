@@ -59,7 +59,7 @@
       "status": "passed"
     }
   ],
-  "date": "2026-10-07",
+  "date": "2026-10-14",
   "environment": "native_windows_build_machine",
   "windows": {
     "version": "25H2",
@@ -79,19 +79,35 @@
     "cargo_check_locked": "passed",
     "cargo_clippy_all_targets_deny_warnings": "passed",
     "cargo_test_locked": {
-      "passed": 6,
-      "failed": 0
+      "passed": 16,
+      "failed": 0,
+      "ignored": 3,
+      "ignored_reason": "3 opt-in runtime integrations; real corpus integration passed separately on 2026-10-08, previous RDF and basic integrations passed as recorded"
     },
     "packaging_unittest": {
       "passed": 3,
       "failed": 0
     },
-    "release_build_locked": "passed"
+    "release_build_locked": "passed",
+    "real_runtime_integration": {
+      "status": "passed",
+      "command": "cargo test --locked existing_workflows_with_bundled_annif -- --ignored --nocapture",
+      "scope": [
+        "project configuration and real backend/name listing",
+        "TSV vocabulary with language",
+        "TF-IDF and MLLM training",
+        "TF-IDF, MLLM and Ensemble suggestions parsed into URI/label/score",
+        "directory input expansion",
+        "JSON export including explicit failure",
+        "workspace change and runtime rejection"
+      ],
+      "network": "not blocked in Rust integration; blocked separately in packaged verify_runtime.py"
+    }
   },
   "runtime_only": false,
   "artifact": "dist/AnnifManager-win64.zip",
-  "artifact_size_bytes": 171478222,
-  "artifact_sha256": "855b34e13b571510e61fb42236735e6d8dcee0ceb0e3619b3b539053917cd5a3",
+  "artifact_size_bytes": 171636772,
+  "artifact_sha256": "729f35f2930c3103fd4dd3bb68365ecbafaaa1cde6f2a78093512c531682596b",
   "artifact_hash_check": "passed_independent_Get-FileHash_matches_sidecar",
   "pe_inspection": {
     "tool": "dumpbin 14.50.35726.0",
@@ -102,11 +118,16 @@
   },
   "extracted_zip_cli_test": "not_repeated_for_graphics_only_change; build_time_cli_verification_passed",
   "relocation_test": "passed_on_previous_artifact; not_repeated_for_graphics_only_change",
-  "native_windows_test": "cli_passed_on_build_machine",
+  "native_windows_test": "CLI and main GUI workflows passed on build machine",
   "clean_windows_test": "not_run_no_clean_machine_available",
-  "desktop_application_test": "extracted_ZIP_started_and_responsive_on_build_machine",
-  "ui_flows_test": "not_run",
-  "damaged_release_package_ui_test": "not_run",
+  "desktop_application_test": "passed: final release native GUI; see validation-ui-windows.json",
+  "ui_flows_test": {
+    "project_editor_and_listing": "passed_using_Windows_UIAutomation_on_intermediate_release",
+    "all_tabs_light_background": "passed_headless_egui_regression_test",
+    "vocabulary_training_suggest_export_native_ui": "passed on build machine; detailed executable coverage in validation-ui-windows.json",
+    "final_screenshot": "target/funcional-final.png"
+  },
+  "damaged_release_package_ui_test": "passed: final release without runtime shows unavailable error",
   "portable_validation_complete": false,
   "pending_checklist": "packaging/TESTE-WINDOWS-LIMPO.md",
   "previous_artifact": {
@@ -143,6 +164,61 @@
     "cause": "Root UI has no background; missing CentralPanel left dark renderer clear color visible",
     "change": "All tab content wrapped in egui CentralPanel after top menu",
     "screenshot": "target/painel-claro.png",
-    "checks": "fmt, check, Clippy, 6 Rust tests and 8 real runtime commands passed"
+    "checks": "12 Rust tests passed, including headless painting check for all five tabs; real runtime integration passed separately"
+  },
+  "previous_functional_artifact_sha256": "855b34e13b571510e61fb42236735e6d8dcee0ceb0e3619b3b539053917cd5a3",
+  "known_limits": [
+    "Clean Windows validation pending",
+    "No timeout or cancellation",
+    "Workspace preference lasts for current session only",
+    "Full NALT corpus training and accuracy not evaluated; functional sample passed"
+  ],
+  "bundled_examples": [
+    "projects.toml",
+    "projects-nalt.toml",
+    "vocabulario.tsv",
+    "treinamento.tsv",
+    "documento.txt"
+  ],
+  "nalt_vocabulary_validation": {
+    "status": "passed",
+    "subjects": 76691,
+    "languages": [
+      "en",
+      "es"
+    ],
+    "report": "packaging/validation-nalt.json",
+    "training": "passed with real agriculture sample: 100 documents, 5 held-out inputs, 15 suggestions results; see validation-corpus-nalt.json"
+  },
+  "previous_rdf_fix_artifact_sha256": "40a9c17c6d3899d276bff4d28d77d126e226e297cc5cf047ec9b0278afd0ec1e",
+  "rdf_path_fix": {
+    "cause": "Windows canonicalize adds verbatim path prefix; RDFLib converts it incorrectly into a file URI (WinError 123)",
+    "change": "retain canonical validation; remove Windows verbatim disk prefix or convert verbatim UNC to ordinary UNC for vocabulary argument only",
+    "unit_tests": "passed for disk, UNC, Unicode, spaces and special characters",
+    "small_rdf_service_integration": "passed; filename contains Unicode, spaces, # and %",
+    "native_ui_click_test": "passed small RDF with Unicode, spaces, # and %",
+    "full_nalt_ui_service_integration": "passed; 76691 subjects; exit code 0; all model files written"
+  },
+  "local_installation_update": {
+    "path": "D:/AnnifManager/AnnifManager.exe",
+    "backup": "D:/AnnifManager/AnnifManager.before-accessible-input.exe",
+    "sha256": "33f7fbd34f87403acaa3a425b7553c1c70ce32c80742b12169c95893106c3ee0",
+    "scope": "executable only; runtime and workspace preserved",
+    "hash_check": "passed"
+  },
+  "vocabulary_selection": {
+    "status": "passed",
+    "parser": "loaded, unloaded, multilingual, untagged, empty and malformed tables",
+    "real_service_integration": "passed: list before and after TSV load, 2 subjects, pt; train TF-IDF/MLLM, suggest all three backends and JSON export",
+    "native_ui": "UIAutomation invoked refresh in isolated NALT workspace and verified unloaded status; selected ID text not exposed as accessible name",
+    "full_native_workflows": "main workflows passed on build machine; see validation-ui-windows.json",
+    "clean_windows": "pending",
+    "runtime_package_verification": "8 commands passed, Python network blocked"
+  },
+  "background_results": {
+    "regression_test": "passed: vocabulary and Suggest completion consumed with Diagnostics selected",
+    "native_ui": "passed: refresh vocabulary, switch to Diagnostics, workspace actions enabled when completed",
+    "result_provenance": "training and Suggest show original project ID",
+    "package_verification": "8 commands passed; Python CLI network blocked"
   }
 }
