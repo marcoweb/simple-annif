@@ -128,6 +128,37 @@ impl ProcessingUi {
                 Err(error) => format!("Erro ao exportar: {error:#}"),
             });
         }
+        if !self.results.is_empty() {
+            if ui
+                .add_enabled(
+                    !self.is_busy(),
+                    egui::Button::new("Exportar para Evametrics (CSV)"),
+                )
+                .clicked()
+            {
+                match crate::services::evametrics::render(&self.results) {
+                    Err(error) => self.status = Some(format!("Erro ao exportar: {error:#}")),
+                    Ok(_) => {
+                        if let Some(path) = FileDialog::new()
+                            .add_filter("CSV", &["csv"])
+                            .set_file_name("sugestoes-evametrics.csv")
+                            .save_file()
+                        {
+                            self.status = Some(
+                                match crate::services::evametrics::export(&path, &self.results) {
+                                    Ok(()) => format!(
+                                        "Arquivo Evametrics salvo em {}. Confira se os IDs correspondem ao padrão-ouro.",
+                                        path.display()
+                                    ),
+                                    Err(error) => format!("Erro ao exportar: {error:#}"),
+                                },
+                            );
+                        }
+                    }
+                }
+            }
+            ui.small("Evametrics: IDs pelo nome do arquivo (D8001.txt → D8001; 1.txt → D1). Exporta descritores, sem scores; o título usa o nome do arquivo.");
+        }
         if let Some(status) = &self.status {
             ui.label(status);
         }

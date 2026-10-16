@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-16",
+  "environment": "native_windows_build_machine",
+  "upstream": {
+    "repository": "https://github.com/marcoweb/evametrics",
+    "commit": "9b2b9dc3d8d28bb53722ad9de63349d33598077b",
+    "parser": "components/dataset-load-control.tsx"
+  },
+  "format": {
+    "encoding": "UTF-8 without BOM",
+    "header": "ID;Titulo;Descriptores",
+    "id": "filename stem, prefixed with uppercase D if absent",
+    "title": "filename stem",
+    "terms": "suggestion labels, comma-separated; deduplicated ignoring case"
+  },
+  "checks": {
+    "cargo_fmt_check": "passed",
+    "cargo_check_locked": "passed",
+    "cargo_clippy_all_targets_deny_warnings": "passed",
+    "cargo_test_locked": {"passed": 20, "failed": 0, "ignored": 4},
+    "packaging_unittest": {"passed": 3, "failed": 0},
+    "export_unit_tests": "Unicode, stable IDs, deduplication; reject delimiters, empty/failed documents, duplicate IDs and mixed projects before writing destination",
+    "native_ui": "passed: select meu-ensemble, open D8001.txt, execute Suggest, export via CSV Save dialog; success status verified with Windows UIAutomation",
+    "actual_export": "target/Validacao UI completa/AnnifManager/examples/sugestoes-evametrics.csv",
+    "upstream_parser": "passed: actual exported CSV read by extracted upstream import loop, retaining D8001 and both accented labels",
+    "parser_command": "node packaging/verify_evametrics_import.cjs target/evametrics/dataset-load-control.tsx \"target/Validacao UI completa/AnnifManager/examples/sugestoes-evametrics.csv\" target/evametrics/expected.json",
+    "parser_expected": [{"id": "D8001", "terms": ["Computação", "Jardinagem"]}],
+    "release_build": "passed",
+    "bundled_runtime": "all 8 real CLI commands passed; Python CLI networking blocked"
+  },
+  "artifact_sha256": "5759c78c2a9e76ecbd77ed0e63a105a02ac20077ae1509dbe3104e56605dd7c1",
+  "executable_sha256": "d93e82fa02f1d45b7c07b0d5f3d98403a0583715002968d02930edd855bea9a4",
+  "local_installation": "D:/AnnifManager/AnnifManager.exe; backup AnnifManager.before-evametrics-export.exe; runtime/workspace preserved",
+  "limits": [
+    "Import logic verified directly; browser upload and metric calculations not tested",
+    "IDs and descriptor labels must match the user's gold standard",
+    "Upstream parser cannot safely import empty term lists or labels containing commas, semicolons, quotes or line breaks; export rejects these cases",
+    "Clean Windows validation remains pending"
+  ]
+}

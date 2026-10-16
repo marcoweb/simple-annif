@@ -92,7 +92,9 @@ Os fluxos existentes foram corrigidos e verificados com o Annif incorporado:
 - Treinamento: seleção de arquivo ou pasta, logs progressivos e orientação
   para Ensemble, que utiliza os modelos dos projetos fonte.
 - Suggest: seleção de arquivos ou pastas TXT, resultados por documento com
-  URI, assunto e score, falhas explícitas e exportação JSON estruturada.
+  URI, assunto e score, falhas explícitas, exportação JSON estruturada e
+  CSV para Evametrics (`ID;Titulo;Descriptores`). IDs vêm dos nomes dos arquivos
+  e devem coincidir com o padrão-ouro; veja as restrições no guia de uso.
 - Troca de workspace: limpa seleções e resultados anteriores; operações
   concorrentes que alteram o contexto são bloqueadas durante o processamento.
 
@@ -102,9 +104,11 @@ completo. Os fluxos principais passaram pela UI nativa na máquina de build:
 carga TSV/RDF, treinamento TF-IDF/MLLM, Suggest e exportação pelo diálogo Windows.
 Veja [o relatório da interface](packaging/validation-ui-windows.json).
 
-O **ZIP completo Windows x64** foi compilado em release em 14 de outubro de
+O **ZIP completo Windows x64** foi compilado em release em 16 de outubro de
 2026, com Python 3.13.16, Annif 1.4.2, dependências e dados linguísticos.
-Formatação, check, Clippy, 18 testes Rust e três testes Python passaram.
+Formatação, check, Clippy, 20 testes Rust e três testes Python passaram.
+O CSV gerado pela UI nativa passou pelo código de importação do Evametrics;
+veja [a validação de compatibilidade](packaging/validation-evametrics.json).
 O recebimento de resultados e logs continua ao trocar de aba, liberando
 as ações ao terminar. Suggest e treinamento identificam o projeto do resultado.
 Para preparar uma amostra real de agricultura/NALT, veja

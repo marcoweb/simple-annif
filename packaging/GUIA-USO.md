@@ -50,6 +50,35 @@ Substitua projetos, vocabulário e corpus pelos seus dados para uso produtivo.
 
 ## Formatos
 
+### Exportar para Evametrics
+
+Após executar Suggest, clique em **Exportar para Evametrics (CSV)**. O arquivo
+UTF-8 usa `ID;Titulo;Descriptores`, conforme o importador de
+[marcoweb/evametrics](https://github.com/marcoweb/evametrics/blob/9b2b9dc3d8d28bb53722ad9de63349d33598077b/components/dataset-load-control.tsx).
+Importe-o como **Dataset**, junto ao seu padrão-ouro no Evametrics.
+
+- O ID vem do nome do arquivo sem extensão. `D8001.txt` gera `D8001`;
+  `8001.txt` também gera `D8001`. Outros nomes recebem o prefixo `D` se necessário.
+  Os IDs devem coincidir exatamente com os do padrão-ouro; não há renumeração.
+- A coluna de título usa o nome do arquivo sem extensão. Os descritores são os
+  nomes dos assuntos retornados pelo Annif, separados por vírgula. Scores, URIs
+  e logs permanecem disponíveis na exportação JSON.
+- Descritores repetidos, ignorando maiúsculas, são exportados uma única vez.
+- O importador atual não representa corretamente listas vazias, nem descritores
+  com vírgulas, ponto e vírgula, aspas ou quebras de linha. Nesses casos, a
+  exportação mostra um erro e mantém o destino intacto. JSON preserva esses dados.
+- Resultados com falhas, IDs repetidos ou projetos diferentes no mesmo arquivo
+  são rejeitados para evitar omissões e comparações incorretas.
+
+Exemplo:
+
+```csv
+ID;Titulo;Descriptores
+D8001;D8001;"corn, flowering, soil"
+```
+
+### Arquivos de entrada
+
 - Todos os arquivos de texto devem ser UTF-8.
 - Vocabulário TSV: uma linha por assunto, `URI<TAB>descritor`. Informe seu
   idioma (por exemplo `pt`). SKOS/RDF e CSV também são aceitos pelo Annif.

@@ -1,4 +1,5 @@
 pub mod diagnostics;
+pub mod evametrics;
 #[cfg(test)]
 mod integration_tests;
 pub mod processing;

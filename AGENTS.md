@@ -1,14 +1,22 @@
 # Annif Manager — instruções para retomar no Windows
 
-Estado atualizado em 14 de outubro de 2026. O escopo confirmado pelo usuário é
+Estado atualizado em 16 de outubro de 2026. O escopo confirmado pelo usuário é
 concluir as funcionalidades atuais, sem adicionar histórico, avaliações ou SQLite.
 O pacote completo Windows x64 foi reconstruído com correções de projetos,
-vocabulários, treinamento, Suggest e exportação JSON. Consulte `README.md` e
+vocabulários, treinamento, Suggest e exportações JSON/CSV. Consulte `README.md` e
 `packaging/GUIA-USO.md` para os fluxos e exemplos agora incluídos no ZIP.
 
 Artefato: `dist/AnnifManager-win64.zip`; SHA-256:
-`5e03c01a5a127946d57c767762e48522c8db09e8354b2c7571aa738d9debfd30`.
+`5759c78c2a9e76ecbd77ed0e63a105a02ac20077ae1509dbe3104e56605dd7c1`.
 Relatório: `packaging/validation-windows.json`.
+Adição solicitada pelo usuário: Suggest → Exportar para Evametrics (CSV),
+conforme `marcoweb/evametrics` revisão `9b2b9dc3d8d28bb53722ad9de63349d33598077b`.
+Contrato `ID;Titulo;Descriptores`: nomes dos arquivos fornecem os IDs com prefixo
+D, descritores são labels. Rejeitar falhas, listas vazias, IDs repetidos e
+delimitadores que o parser simples do destino não preserva. Não calcular métricas
+na aplicação. Teste nativo gerou CSV, lido pelo código do importador com acentos
+preservados; ver `packaging/validation-evametrics.json`. Node é usado somente no
+teste opcional de desenvolvimento, sem novo requisito no pacote Windows.
 Nova criação em Projetos → Novo projeto: formulário com nome, ID sugerido,
 idioma pt/en/es, vocabulário e método. Ensemble seleciona fontes compatíveis.
 Cada criação usa um novo TOML, sem sobrescrever projetos existentes; a lista
@@ -35,7 +43,7 @@ Passou `real_nalt_corpus_with_bundled_annif`: TF-IDF e MLLM treinados; cinco
 documentos em cada um dos três backends, 15 resultados JSON. Duração total
 379,97 s; ver `packaging/validation-corpus-nalt.json`. O teste é funcional,
 pelos serviços com runtime incorporado; não mede qualidade nem valida a UI.
-Passaram fmt/check/Clippy, 18 testes Rust e três testes Python. O teste Rust
+Passaram fmt/check/Clippy, 20 testes Rust e três testes Python. O teste Rust
 ignorado por padrão `existing_workflows_with_bundled_annif` foi executado
 separadamente com `ANNIF_TEST_PACKAGE` e passou. Ele usa workspace temporário;
 não testar operações destrutivas sobre dados do usuário.
@@ -48,9 +56,9 @@ pela UI nativa na máquina de build; ver `packaging/validation-ui-windows.json`.
 Campos de texto aceitam SetValue da acessibilidade Windows e respeitam o estado
 desabilitado, coberto por teste egui. A troca de workspace, a rejeição de destino
 em runtime e a abertura release sem runtime também passaram pela UI.
-Executável atual: SHA-256 `8af04c3953a90512e54e23fd1b6f55566d4363b29534d530a6c53e8b32d4983c`.
+Executável atual: SHA-256 `d93e82fa02f1d45b7c07b0d5f3d98403a0583715002968d02930edd855bea9a4`.
 Instalação em D:/AnnifManager atualizada com backup
-`AnnifManager.before-accessible-input.exe`; dados preservados.
+`AnnifManager.before-evametrics-export.exe`; dados preservados.
 O usuário pediu versionamento contínuo: fazer commits locais dos marcos
 validados, sem incluir artefatos, corpora ou dados do workspace. Primeiro marco
 registrado em `9280bd8`; não fazer push sem solicitação.

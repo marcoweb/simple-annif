@@ -59,7 +59,7 @@
       "status": "passed"
     }
   ],
-  "date": "2026-10-14",
+  "date": "2026-10-16",
   "environment": "native_windows_build_machine",
   "windows": {
     "version": "25H2",
@@ -79,10 +79,10 @@
     "cargo_check_locked": "passed",
     "cargo_clippy_all_targets_deny_warnings": "passed",
     "cargo_test_locked": {
-      "passed": 18,
+      "passed": 20,
       "failed": 0,
       "ignored": 4,
-      "ignored_reason": "4 opt-in runtime tests; form_projects_with_bundled_annif passed separately; earlier integrations retained in reports"
+      "ignored_reason": "4 opt-in runtime tests not repeated for export-only change; earlier integrations retained in reports"
     },
     "packaging_unittest": {
       "passed": 3,
@@ -106,8 +106,8 @@
   },
   "runtime_only": false,
   "artifact": "dist/AnnifManager-win64.zip",
-  "artifact_size_bytes": 171695079,
-  "artifact_sha256": "5e03c01a5a127946d57c767762e48522c8db09e8354b2c7571aa738d9debfd30",
+  "artifact_size_bytes": 171701914,
+  "artifact_sha256": "5759c78c2a9e76ecbd77ed0e63a105a02ac20077ae1509dbe3104e56605dd7c1",
   "artifact_hash_check": "passed_independent_Get-FileHash_matches_sidecar",
   "pe_inspection": {
     "tool": "dumpbin 14.50.35726.0",
@@ -116,18 +116,18 @@
     "direct_vcruntime_or_msvcp_imports": false,
     "scope": "Rust executable only; Python extension DLL dependencies and clean-machine loading remain unverified"
   },
-  "extracted_zip_cli_test": "not_repeated_for_graphics_only_change; build_time_cli_verification_passed",
-  "relocation_test": "passed_on_previous_artifact; not_repeated_for_graphics_only_change",
+  "extracted_zip_cli_test": "not repeated for export-only change; build-time verification passed all 8 commands",
+  "relocation_test": "passed on previous artifact; not repeated for export-only change",
   "native_windows_test": "CLI and main GUI workflows passed on build machine",
   "clean_windows_test": "not_run_no_clean_machine_available",
-  "desktop_application_test": "passed: final release native GUI; see validation-ui-windows.json",
+  "desktop_application_test": "CSV export passed on current release; other native UI workflows retain earlier executable coverage in validation-ui-windows.json and project_form",
   "ui_flows_test": {
     "project_editor_and_listing": "passed_using_Windows_UIAutomation_on_intermediate_release",
     "all_tabs_light_background": "passed_headless_egui_regression_test",
     "vocabulary_training_suggest_export_native_ui": "passed on build machine; detailed executable coverage in validation-ui-windows.json",
     "final_screenshot": "target/funcional-final.png"
   },
-  "damaged_release_package_ui_test": "passed: final release without runtime shows unavailable error",
+  "damaged_release_package_ui_test": "passed on earlier release; not repeated for export-only change",
   "portable_validation_complete": false,
   "pending_checklist": "packaging/TESTE-WINDOWS-LIMPO.md",
   "previous_artifact": {
@@ -201,8 +201,8 @@
   },
   "local_installation_update": {
     "path": "D:/AnnifManager/AnnifManager.exe",
-    "backup": "D:/AnnifManager/AnnifManager.before-project-form.exe",
-    "sha256": "8af04c3953a90512e54e23fd1b6f55566d4363b29534d530a6c53e8b32d4983c",
+    "backup": "D:/AnnifManager/AnnifManager.before-evametrics-export.exe",
+    "sha256": "d93e82fa02f1d45b7c07b0d5f3d98403a0583715002968d02930edd855bea9a4",
     "scope": "executable only; runtime and workspace preserved",
     "hash_check": "passed"
   },
@@ -231,5 +231,11 @@
     "executable_sha256": "8af04c3953a90512e54e23fd1b6f55566d4363b29534d530a6c53e8b32d4983c",
     "runtime_verification": "8 commands passed; Python network blocked",
     "limitations": "pt/en/es in form; other languages and parameters via TOML editor; legacy .cfg requires conversion before using form"
+  },
+  "previous_evametrics_artifact_sha256": "5e03c01a5a127946d57c767762e48522c8db09e8354b2c7571aa738d9debfd30",
+  "evametrics_export": {
+    "status": "passed",
+    "report": "packaging/validation-evametrics.json",
+    "scope": "native UI export and direct upstream parser compatibility; no browser upload"
   }
 }
