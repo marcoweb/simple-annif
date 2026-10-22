@@ -1,0 +1,22 @@
+{
+  "reported_date": "2026-10-22",
+  "environment": "separate_windows_machine_reported_by_user",
+  "evidence": {
+    "source": "E:/verification-windows-limpo.json read during conversation",
+    "python": "3.13.16",
+    "annif": "1.4.2",
+    "numpy": "2.2.6",
+    "scikit_learn": "1.7.2",
+    "architecture": "x64",
+    "network": "blocked_in_cli_tests",
+    "passed_commands": ["--version", "list-projects", "load-vocab smoke", "train smoke-tfidf", "train smoke-mllm", "suggest smoke-tfidf", "suggest smoke-mllm", "suggest smoke-ensemble"]
+  },
+  "user_confirmations": {
+    "different_machine": true,
+    "python_not_installed": true,
+    "gui": "user reported apparent normal operation; detailed checklist not provided"
+  },
+  "not_confirmed": ["Windows version/build", "ZIP hash", "absence of all other development tools", "relocation", "workspace change", "missing runtime handling"],
+  "scope": "Previous package before cancellation feature; user plans further tests on other machines",
+  "portable_validation_complete": false
+}

@@ -1,9 +1,10 @@
-use super::{AnnifRuntime, ProcessResult, Project, commands};
+use super::{AnnifRuntime, Cancellation, ProcessResult, Project, commands};
 use anyhow::Result;
 use std::process::Command;
 
 #[derive(Clone)]
 pub struct SystemRuntime {
+    pub(crate) cancellation: Cancellation,
     pub python_cmd: String,
     pub annif_cmd: String,
 }
@@ -11,6 +12,7 @@ pub struct SystemRuntime {
 impl SystemRuntime {
     pub fn new(python_cmd: String, annif_cmd: String) -> Self {
         Self {
+            cancellation: Cancellation::default(),
             python_cmd,
             annif_cmd,
         }
@@ -51,13 +53,18 @@ impl AnnifRuntime for SystemRuntime {
         commands::progressive(
             self.annif_command(&["train", project_id, data_path]),
             sender,
+            self.cancellation.clone(),
         )
     }
 
     fn suggest(&self, project_id: &str, file_path: &str) -> Result<ProcessResult> {
-        commands::ensure_success(commands::run(
+        let (sender, receiver) = crossbeam_channel::unbounded();
+        drop(receiver); // Suggest retains the complete streams in ProcessResult.
+        commands::cancellable(
             self.annif_command(&["suggest", project_id, file_path]),
-        )?)
+            sender,
+            &self.cancellation,
+        )
     }
 
     fn load_vocab(
@@ -70,6 +77,7 @@ impl AnnifRuntime for SystemRuntime {
         commands::progressive(
             self.annif_command(&["load-vocab", vocab_id, vocab_path, "--language", language]),
             sender,
+            self.cancellation.clone(),
         )
     }
 }

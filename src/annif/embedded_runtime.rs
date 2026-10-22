@@ -1,4 +1,4 @@
-use super::{AnnifRuntime, ProcessResult, Project, commands};
+use super::{AnnifRuntime, Cancellation, ProcessResult, Project, commands};
 use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -66,10 +66,11 @@ fn validate_python_paths(runtime_dir: &Path) -> Result<()> {
 }
 
 // Mesmo ponto de entrada declarado pelo Annif em project.scripts.
-const ANNIF_ENTRY_POINT: &str = "from annif.cli import cli; cli()";
+const ANNIF_ENTRY_POINT: &str = include_str!("cli_entry.py");
 
 #[derive(Clone)]
 pub struct EmbeddedWindowsRuntime {
+    pub(crate) cancellation: Cancellation,
     runtime_dir: PathBuf,
     python: PathBuf,
     workspace: PathBuf,
@@ -88,6 +89,7 @@ impl EmbeddedWindowsRuntime {
             application_dir.join("runtime").join("bin").join("python3")
         };
         let runtime = Self {
+            cancellation: Cancellation::default(),
             runtime_dir: application_dir.join("runtime"),
             python,
             workspace: workspace.to_path_buf(),
@@ -128,6 +130,7 @@ impl EmbeddedWindowsRuntime {
             "O workspace deve ficar fora do diretório runtime"
         );
         Ok(Self {
+            cancellation: self.cancellation.clone(),
             runtime_dir: self.runtime_dir.clone(),
             python: self.python.clone(),
             workspace: resolved,
@@ -206,13 +209,18 @@ impl AnnifRuntime for EmbeddedWindowsRuntime {
         commands::progressive(
             self.annif_command(&["train", project_id, data_path])?,
             sender,
+            self.cancellation.clone(),
         )
     }
 
     fn suggest(&self, project_id: &str, file_path: &str) -> Result<ProcessResult> {
-        commands::ensure_success(commands::run(
+        let (sender, receiver) = crossbeam_channel::unbounded();
+        drop(receiver); // Suggest retains the complete streams in ProcessResult.
+        commands::cancellable(
             self.annif_command(&["suggest", project_id, file_path])?,
-        )?)
+            sender,
+            &self.cancellation,
+        )
     }
 
     fn load_vocab(
@@ -225,6 +233,7 @@ impl AnnifRuntime for EmbeddedWindowsRuntime {
         commands::progressive(
             self.annif_command(&["load-vocab", vocab_id, vocab_path, "--language", language])?,
             sender,
+            self.cancellation.clone(),
         )
     }
 }

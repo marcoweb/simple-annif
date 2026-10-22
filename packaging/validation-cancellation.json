@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-22",
+  "environment": "native_windows_build_machine",
+  "scope": ["training", "vocabulary_load", "suggest_batch"],
+  "implementation": {
+    "cancellation": "operation-scoped token; worker acknowledges only after process termination and output collection",
+    "windows": "CREATE_SUSPENDED, private Job Object with KILL_ON_JOB_CLOSE, resume initial thread, terminate job on cancellation; no shell or process-name based termination",
+    "unix": "dedicated process group; implemented but not executed in this Windows validation",
+    "partial_results": "completed Suggest documents preserved; interrupted and skipped documents explicit in JSON; incomplete Evametrics CSV rejected",
+    "storage": "no rollback of Annif writes; repeat cancelled vocabulary load/training before use",
+    "windows_retry_fix": "Annif 1.4.2 atomic_save uses os.rename, which raises WinError 183 for existing targets on Windows. Embedded CLI entry point substitutes os.replace only in annif.util's local os namespace; pinned wheels and global os module unchanged."
+  },
+  "checks": {
+    "cargo_fmt_check": "passed",
+    "cargo_check_locked": "passed",
+    "cargo_clippy_all_targets_deny_warnings": "passed",
+    "cargo_test_locked": {"passed": 24, "failed": 0, "ignored": 4},
+    "process_tests": "real child plus descendant terminated; both streams retained; pre-cancel prevents spawn; late/repeated requests harmless; fresh operation succeeds; nonzero exit remains an error",
+    "batch_test": "prior result retained, every remaining document marked cancelled; JSON retains flags and CSV rejected",
+    "packaging_unittest": {"passed": 3, "failed": 0},
+    "real_annif_integration": {
+      "test": "existing_workflows_with_bundled_annif",
+      "status": "passed",
+      "duration_seconds": 69.80,
+      "scope": "isolated workspace, vocabulary load repeated, TF-IDF and MLLM each trained twice, all 3 backends suggest, JSON export, workspace validation"
+    },
+    "native_ui": {
+      "tool": "Windows UIAutomation",
+      "package": "target/Validacao UI completa/AnnifManager",
+      "vocabulary": "passed: cancel full NALT RDF load; no child CLI remains; subsequent sample TSV reload succeeds",
+      "training": "passed: cancel TF-IDF training; no child CLI remains; retry succeeds",
+      "suggest": "passed: 3 documents, first completed, second interrupted, third skipped; no child CLI remains; results retained across tab switches",
+      "export": "passed: actual JSON contains 3 records, first with suggestions and cancelled=false, remaining with cancelled=true and explicit errors; CSV export rejected",
+      "export_evidence": "target/cancel-inputs/sugestoes.json",
+      "retry_suggest": "passed: fresh batch completes all 3 documents after cancellation"
+    },
+    "release_build": "passed",
+    "bundled_runtime": "all 8 CLI commands passed, Python networking blocked"
+  },
+  "artifact_sha256": "ba07824d3a40c7cc9a923ef700f0a13913fd299125d9a8bc5ff6e826b40cf4e1",
+  "executable_sha256": "e481b155e885a6a37f644dc82a3ac3ada2b0f6126aa4c979f485409a4ff9a44a",
+  "installation": "D:/AnnifManager/AnnifManager.exe; backup AnnifManager.before-cancellation.exe; runtime/workspace preserved",
+  "limits": [
+    "Interrupted model/vocabulary writes are not rolled back",
+    "No automatic timeout; project/vocabulary list queries and Diagnostics are not cancellable",
+    "User confirmation on a machine without Python concerns the previous package, before this feature",
+    "Cancellation on a clean target machine remains to be verified"
+  ]
+}

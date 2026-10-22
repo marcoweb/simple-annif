@@ -15,3 +15,10 @@ serde_json = "1.0.151"
 thiserror = "2.0.20"
 tokio = { version = "1.53.1", features = ["full"] }
 toml = "1.1.6"
+
+# Already present in Cargo.lock; native process-tree lifetime management.
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Diagnostics_ToolHelp"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "=0.2.189"

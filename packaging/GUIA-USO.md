@@ -104,8 +104,27 @@ novo destino e salvar. No modo portátil, salve dentro de
 existente. Após salvar, atualize a lista antes de treinar ou solicitar sugestões.
 
 Mensagens de erro incluem o retorno do Annif. Uma saída em stderr sozinha não
-significa falha; a execução precisa terminar com código zero. Não há timeout
-nem cancelamento: não feche o aplicativo durante treinamento ou carga.
+significa falha; a execução precisa terminar com código zero. Ainda não há timeout.
+
+### Cancelar uma operação
+
+Durante **Treinamento**, **Carregar Vocabulário** ou **Suggest**, clique em
+**Cancelar processamento** na aba da operação. Aguarde a mensagem de cancelamento;
+as ações só serão liberadas após encerrar o processo. Os logs recebidos são mantidos.
+
+- Treinamento e carga são interrompidos sem desfazer arquivos já gravados pelo
+  Annif. O modelo ou vocabulário pode ficar incompleto: repita a operação até
+  concluir com sucesso antes de usar os projetos afetados.
+- Em Suggest, os resultados concluídos são mantidos. O documento interrompido
+  e os restantes recebem indicação de cancelamento ou de não processamento.
+  Exporte JSON para guardar o lote completo, incluindo `cancelled` e `error`.
+  O CSV para Evametrics rejeita esse lote incompleto; execute novamente antes
+  de exportar para avaliação.
+- Uma operação que já terminou conserva seu resultado, mesmo se o pedido de
+  cancelamento chegar logo depois. Para tentar novamente, inicie uma nova operação.
+- Consultas de projetos, vocabulários e Diagnóstico ainda não têm cancelamento.
+
+Prefira cancelar e aguardar a confirmação antes de fechar a aplicação.
 
 A validação final em uma máquina Windows limpa segue pendente. Consulte o
 roteiro `TESTE-WINDOWS-LIMPO.md` fornecido junto ao pacote.

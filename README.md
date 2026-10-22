@@ -80,7 +80,12 @@ As operações já iniciadas conservam o workspace que tinham ao começar.
 
 Logs progressivos de treinamento e carga de vocabulário são capturados no
 resultado final, além de enviados à UI. Uma saída diferente de zero é tratada
-como falha nessas operações. Ainda não há timeout ou cancelamento de processos.
+como falha nessas operações. Treinamento, carga de vocabulário e Suggest têm
+**Cancelar processamento**, com preservação de logs. O cancelamento aguarda o
+encerramento do processo e seus auxiliares. Carga/treinamento interrompidos podem
+deixar arquivos parciais e devem ser refeitos antes de usar os projetos. Em Suggest,
+o JSON mantém os resultados concluídos e registra documentos cancelados/não
+processados; CSV para Evametrics rejeita lotes incompletos. Ainda não há timeout.
 
 Os fluxos existentes foram corrigidos e verificados com o Annif incorporado:
 
@@ -104,9 +109,13 @@ completo. Os fluxos principais passaram pela UI nativa na máquina de build:
 carga TSV/RDF, treinamento TF-IDF/MLLM, Suggest e exportação pelo diálogo Windows.
 Veja [o relatório da interface](packaging/validation-ui-windows.json).
 
-O **ZIP completo Windows x64** foi compilado em release em 16 de outubro de
+O **ZIP completo Windows x64** foi compilado em release em 22 de outubro de
 2026, com Python 3.13.16, Annif 1.4.2, dependências e dados linguísticos.
-Formatação, check, Clippy, 20 testes Rust e três testes Python passaram.
+Formatação, check, Clippy, 24 testes Rust e três testes Python passaram.
+Cancelamento de processos e recuperação estão registrados em
+[validation-cancellation.json](packaging/validation-cancellation.json).
+Corrigida também a substituição de arquivos do Annif no Windows ao repetir
+carga/treinamento, mantendo as versões fixadas.
 O CSV gerado pela UI nativa passou pelo código de importação do Evametrics;
 veja [a validação de compatibilidade](packaging/validation-evametrics.json).
 O recebimento de resultados e logs continua ao trocar de aba, liberando
@@ -122,7 +131,11 @@ e mover o pacote entre caminhos com espaços e acentos: carga de vocabulário,
 treinamento TF-IDF/MLLM e suggest TF-IDF/MLLM/Ensemble com conexões bloqueadas.
 O [relatório Windows](packaging/validation-windows.json) registra o hash e
 os limites dessa validação; o relatório Wine anterior permanece preservado.
-**A execução em Windows limpo ainda não foi validada; a portabilidade final permanece pendente.**
+Em 22 de outubro de 2026, o usuário forneceu um relatório com oito testes CLI
+aprovados e confirmou funcionamento geral da UI em outra máquina sem Python
+instalado. Versão do Windows, hash testado e itens de relocação/workspace/runtime
+ausente não foram confirmados; a validação completa permanece pendente. Esse
+relato antecede a inclusão do cancelamento, que exige novos testes nessa máquina.
 Uma falha de abertura no driver AMD `atio6axx.dll` foi contornada restringindo
 a inicialização gráfica Windows a DirectX 12. O ZIP corrigido passou no teste
 de abertura e resposta da janela nesta máquina, sem configuração adicional.

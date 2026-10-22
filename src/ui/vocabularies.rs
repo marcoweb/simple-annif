@@ -1,4 +1,4 @@
-use crate::annif::ProcessResult;
+use crate::annif::{Cancellation, ProcessResult};
 use crate::services::runtime::ApplicationRuntime;
 use eframe::egui;
 use rfd::FileDialog;
@@ -6,6 +6,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 pub struct VocabulariesUi {
+    cancellation: Cancellation,
     vocab_id: String,
     vocab_path: String,
     language: String,
@@ -22,6 +23,7 @@ pub struct VocabulariesUi {
 impl Default for VocabulariesUi {
     fn default() -> Self {
         Self {
+            cancellation: Cancellation::default(),
             vocab_id: "".to_string(),
             vocab_path: "".to_string(),
             language: "pt".into(),
@@ -156,6 +158,8 @@ impl VocabulariesUi {
         ui.add_space(20.0);
 
         if is_loading {
+            super::cancel_button(ui, &self.cancellation);
+            ui.small("Interromper pode deixar o vocabulário incompleto. Carregue o arquivo novamente antes de usar os projetos.");
             ui.ctx()
                 .request_repaint_after(std::time::Duration::from_millis(100));
             ui.horizontal(|ui| {
@@ -180,6 +184,9 @@ impl VocabulariesUi {
         let res_lock = self.result.lock().unwrap().clone();
         if let Some(res) = res_lock {
             match res {
+                Ok(p_res) if p_res.cancelled => {
+                    ui.label("Carga cancelada. Os logs foram preservados. Carregue o vocabulário novamente antes de usar os projetos; arquivos parciais podem ter sido gravados.");
+                }
                 Ok(p_res) => {
                     ui.colored_label(
                         egui::Color32::from_rgb(21, 105, 46),
@@ -222,7 +229,8 @@ impl VocabulariesUi {
         let (tx, rx) = crossbeam_channel::unbounded();
         self.log_receiver = Some(rx);
 
-        let runtime_clone = runtime.clone();
+        self.cancellation = Cancellation::default();
+        let runtime_clone = runtime.with_cancellation(self.cancellation.clone());
         let vocab_id = self.vocab_id.clone();
         let vocab_path = self.vocab_path.clone();
         let language = self.language.clone();

@@ -27,6 +27,21 @@ pub fn text_input(ui: &mut eframe::egui::Ui, value: &mut String) -> eframe::egui
     response
 }
 
+pub fn cancel_button(ui: &mut egui::Ui, cancellation: &crate::annif::Cancellation) {
+    if ui
+        .add_enabled(
+            !cancellation.is_requested(),
+            egui::Button::new("Cancelar processamento"),
+        )
+        .clicked()
+    {
+        cancellation.cancel();
+    }
+    if cancellation.is_requested() {
+        ui.label("Cancelando… aguarde o encerramento do processo.");
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

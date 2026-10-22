@@ -17,6 +17,7 @@ pub struct DocumentResult {
     pub project_id: String,
     pub suggestions: Vec<Suggestion>,
     pub error: Option<String>,
+    pub cancelled: bool,
     pub stdout: String,
     pub stderr: String,
     pub duration_ms: u128,
@@ -86,6 +87,7 @@ pub fn suggest(runtime: &impl AnnifRuntime, project_id: &str, path: &Path) -> Do
         project_id: project_id.into(),
         suggestions: Vec::new(),
         error: None,
+        cancelled: false,
         stdout: String::new(),
         stderr: String::new(),
         duration_ms: 0,
@@ -97,11 +99,17 @@ pub fn suggest(runtime: &impl AnnifRuntime, project_id: &str, path: &Path) -> Do
             stderr,
             duration,
             exit_code,
+            cancelled,
             ..
         } = runtime.suggest(project_id, &path.to_string_lossy())?;
         result.stdout = stdout;
         result.stderr = stderr;
         result.duration_ms = duration.as_millis();
+        result.cancelled = cancelled;
+        anyhow::ensure!(
+            !cancelled,
+            "Suggest cancelado pelo usuário; resultado incompleto descartado"
+        );
         anyhow::ensure!(
             exit_code == Some(0),
             "Suggest falhou (código {exit_code:?}): {}",
@@ -122,9 +130,67 @@ pub fn export(path: &Path, results: &[DocumentResult]) -> Result<()> {
         .with_context(|| format!("Não foi possível salvar {}", path.display()))
 }
 
+pub fn suggest_batch(
+    runtime: &impl AnnifRuntime,
+    project_id: &str,
+    files: &[PathBuf],
+    cancellation: &crate::annif::Cancellation,
+    mut publish: impl FnMut(DocumentResult) -> bool,
+) {
+    for path in files {
+        let result = if cancellation.is_requested() {
+            DocumentResult {
+                path: path.display().to_string(),
+                project_id: project_id.into(),
+                suggestions: Vec::new(),
+                error: Some("Não processado: lote cancelado pelo usuário".into()),
+                cancelled: true,
+                stdout: String::new(),
+                stderr: String::new(),
+                duration_ms: 0,
+            }
+        } else {
+            suggest(runtime, project_id, path)
+        };
+        if !publish(result) {
+            break;
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn cancelled_batch_keeps_prior_results_and_records_every_skipped_document() -> Result<()> {
+        use crate::{annif::Cancellation, services::runtime::ApplicationRuntime};
+        let runtime =
+            ApplicationRuntime::Unavailable("runtime não deve ser chamado após cancelar".into());
+        let cancellation = Cancellation::default();
+        let files = vec![
+            PathBuf::from("one.txt"),
+            PathBuf::from("two.txt"),
+            PathBuf::from("three.txt"),
+        ];
+        let mut results = Vec::new();
+        suggest_batch(&runtime, "teste", &files, &cancellation, |result| {
+            results.push(result);
+            cancellation.cancel();
+            true
+        });
+        assert_eq!(results.len(), 3);
+        assert!(!results[0].cancelled); // earlier failure remains a failure
+        assert!(results[0].error.is_some());
+        assert!(results[1..].iter().all(|result| result.cancelled
+            && result.error.as_ref().unwrap().starts_with("Não processado")));
+        let dir = crate::test_support::TestDirectory::new()?;
+        let path = dir.path().join("cancelled.json");
+        export(&path, &results)?;
+        let json: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+        assert_eq!(json[1]["cancelled"], true);
+        assert!(crate::services::evametrics::render(&results).is_err());
+        Ok(())
+    }
     #[test]
     fn parses_unicode_scores_and_optional_notation() -> Result<()> {
         let rows = parse_suggestions(

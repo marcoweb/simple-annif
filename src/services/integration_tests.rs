@@ -158,6 +158,12 @@ fn existing_workflows_with_bundled_annif() -> Result<()> {
         .join()
         .map_err(|_| anyhow::anyhow!("Worker falhou"))??;
     assert_eq!(loaded.exit_code, Some(0));
+    // Repeating a load must replace existing files on Windows (WinError 183).
+    let (tx, _rx) = crossbeam_channel::unbounded();
+    let reloaded = vocabularies::start(&runtime, "meu-vocab", &vocab.to_string_lossy(), "pt", tx)?
+        .join()
+        .map_err(|_| anyhow::anyhow!("Worker falhou"))??;
+    assert_eq!(reloaded.exit_code, Some(0));
     let available = vocabularies::list(&runtime)?;
     assert!(available[0].loaded);
     assert_eq!(available[0].size, Some(2));
@@ -184,7 +190,7 @@ fn existing_workflows_with_bundled_annif() -> Result<()> {
             )?;
         }
     }
-    for project in ["meu-tfidf", "meu-mllm"] {
+    for project in ["meu-tfidf", "meu-mllm", "meu-tfidf", "meu-mllm"] {
         let (tx, rx) = crossbeam_channel::unbounded();
         let trained = training::start(&runtime, project, &corpus.to_string_lossy(), tx)?
             .join()

@@ -1,14 +1,29 @@
 # Annif Manager — instruções para retomar no Windows
 
-Estado atualizado em 16 de outubro de 2026. O escopo confirmado pelo usuário é
+Estado atualizado em 22 de outubro de 2026. O escopo confirmado pelo usuário é
 concluir as funcionalidades atuais, sem adicionar histórico, avaliações ou SQLite.
 O pacote completo Windows x64 foi reconstruído com correções de projetos,
 vocabulários, treinamento, Suggest e exportações JSON/CSV. Consulte `README.md` e
 `packaging/GUIA-USO.md` para os fluxos e exemplos agora incluídos no ZIP.
 
 Artefato: `dist/AnnifManager-win64.zip`; SHA-256:
-`5759c78c2a9e76ecbd77ed0e63a105a02ac20077ae1509dbe3104e56605dd7c1`.
+`ba07824d3a40c7cc9a923ef700f0a13913fd299125d9a8bc5ff6e826b40cf4e1`.
 Relatório: `packaging/validation-windows.json`.
+Adição solicitada antes do Omikuji: **Cancelar processamento** em Treinamento,
+carga de Vocabulários e Suggest. Token por operação; a UI só libera ações após
+o término do worker. Windows usa Job Object com processo criado suspenso,
+associado ao job antes de retomar, encerrando também os descendentes. Unix usa
+grupo de processos. `windows-sys`/`libc` tornaram-se dependências diretas nas
+mesmas versões já presentes no lock. Logs são preservados; Suggest registra
+`cancelled` no JSON, mantém resultados concluídos e marca todos os restantes.
+CSV Evametrics rejeita lote incompleto. Cancelamento não desfaz arquivos: repetir
+carga/treinamento antes de usar os projetos. Consultas/Diagnóstico não cancelam.
+Corrigido também WinError 183 ao repetir carga/treinamento: o ponto de entrada
+`src/annif/cli_entry.py` adapta apenas `annif.util.os.rename` para `os.replace`
+no Windows, sem alterar o módulo os global ou os wheels fixados. A CLI continua
+sendo `from annif.cli import cli; cli()`. A integração real agora repete carga
+e treinamento dos dois backends. Ver `packaging/validation-cancellation.json`.
+Omikuji ainda não foi incluído.
 Adição solicitada pelo usuário: Suggest → Exportar para Evametrics (CSV),
 conforme `marcoweb/evametrics` revisão `9b2b9dc3d8d28bb53722ad9de63349d33598077b`.
 Contrato `ID;Titulo;Descriptores`: nomes dos arquivos fornecem os IDs com prefixo
@@ -43,7 +58,7 @@ Passou `real_nalt_corpus_with_bundled_annif`: TF-IDF e MLLM treinados; cinco
 documentos em cada um dos três backends, 15 resultados JSON. Duração total
 379,97 s; ver `packaging/validation-corpus-nalt.json`. O teste é funcional,
 pelos serviços com runtime incorporado; não mede qualidade nem valida a UI.
-Passaram fmt/check/Clippy, 20 testes Rust e três testes Python. O teste Rust
+Passaram fmt/check/Clippy, 24 testes Rust e três testes Python. O teste Rust
 ignorado por padrão `existing_workflows_with_bundled_annif` foi executado
 separadamente com `ANNIF_TEST_PACKAGE` e passou. Ele usa workspace temporário;
 não testar operações destrutivas sobre dados do usuário.
@@ -56,14 +71,18 @@ pela UI nativa na máquina de build; ver `packaging/validation-ui-windows.json`.
 Campos de texto aceitam SetValue da acessibilidade Windows e respeitam o estado
 desabilitado, coberto por teste egui. A troca de workspace, a rejeição de destino
 em runtime e a abertura release sem runtime também passaram pela UI.
-Executável atual: SHA-256 `d93e82fa02f1d45b7c07b0d5f3d98403a0583715002968d02930edd855bea9a4`.
+Executável atual: SHA-256 `e481b155e885a6a37f644dc82a3ac3ada2b0f6126aa4c979f485409a4ff9a44a`.
 Instalação em D:/AnnifManager atualizada com backup
-`AnnifManager.before-evametrics-export.exe`; dados preservados.
+`AnnifManager.before-cancellation.exe`; dados preservados.
 O usuário pediu versionamento contínuo: fazer commits locais dos marcos
 validados, sem incluir artefatos, corpora ou dados do workspace. Primeiro marco
 registrado em `9280bd8`; não fazer push sem solicitação.
-O usuário ainda não dispõe de Windows limpo e fará esse teste posteriormente;
-roteiro em `packaging/TESTE-WINDOWS-LIMPO.md`. Não declarar portabilidade concluída.
+Em 22/10, o usuário entregou `E:/verification-windows-limpo.json`: oito testes CLI
+aprovados. Confirmou outra máquina sem Python instalado e funcionamento geral
+da UI. Não informou build do Windows/hash do ZIP nem confirmou relocação,
+workspace e pacote incompleto. Relato anterior ao cancelamento; novos testes
+em outras máquinas ficam para depois. Roteiro em `packaging/TESTE-WINDOWS-LIMPO.md`.
+Não declarar portabilidade completamente validada.
 
 Preservar a inicialização Windows somente com DirectX 12 (o driver AMD
 `atio6axx.dll` falhava com `0xc0000005`), tema claro e CentralPanel envolvendo
@@ -128,7 +147,7 @@ de build do desenvolvedor não são requisitos da máquina de destino.
   já iniciadas conservam o workspace anterior. Não há persistência dessa preferência.
 - Logs progressivos são preservados no resultado final. Erros de treinamento
   e carga de vocabulário por código de saída diferente de zero são apresentados.
-- Não há timeout ou cancelamento de processos na aplicação.
+- Cancelamento disponível em treinamento, carga e Suggest; ainda não há timeout.
 - A lista usa list-projects para IDs e show-project para nome/backend. Suggest
   interpreta URI/descritor/score e exporta JSON estruturado. O teste integrado
   dos serviços e os fluxos principais pela UI nativa passaram na máquina de build.

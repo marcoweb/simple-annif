@@ -1,4 +1,4 @@
-use crate::annif::Project;
+use crate::annif::{Cancellation, Project};
 use crate::services::{
     processing::{self, DocumentResult},
     runtime::ApplicationRuntime,
@@ -14,6 +14,7 @@ enum Event {
 }
 #[derive(Default)]
 pub struct ProcessingUi {
+    cancellation: Cancellation,
     paths_to_process: Vec<String>,
     receiver: Option<Receiver<Event>>,
     results: Vec<DocumentResult>,
@@ -44,6 +45,16 @@ impl ProcessingUi {
                     Err(TryRecvError::Empty) => break,
                     Err(TryRecvError::Disconnected) => {
                         self.receiver = None;
+                        let cancelled = self
+                            .results
+                            .iter()
+                            .filter(|result| result.cancelled)
+                            .count();
+                        if cancelled > 0 {
+                            self.status = Some(format!(
+                                "Processamento cancelado: {cancelled} documento(s) cancelado(s) ou não processado(s). Resultados anteriores preservados; exporte JSON para manter o registro completo."
+                            ));
+                        }
                         break;
                     }
                 }
@@ -104,6 +115,7 @@ impl ProcessingUi {
             }
         });
         if self.is_busy() {
+            super::cancel_button(ui, &self.cancellation);
             ui.spinner();
             ui.label(format!(
                 "Processando… {} documento(s) concluído(s)",
@@ -170,7 +182,11 @@ impl ProcessingUi {
                     ui.label(&result.path);
                     ui.label(format!("Projeto do resultado: {}", result.project_id));
                     if let Some(error) = &result.error {
-                        ui.colored_label(ui.visuals().error_fg_color, error);
+                        if result.cancelled {
+                            ui.label(error);
+                        } else {
+                            ui.colored_label(ui.visuals().error_fg_color, error);
+                        }
                     } else {
                         ui.label(format!(
                             "{} sugestão(ões) · {} ms",
@@ -206,22 +222,20 @@ impl ProcessingUi {
         let paths = self.paths_to_process.clone();
         self.status = None;
         self.results.clear();
+        self.cancellation = Cancellation::default();
+        let cancellation = self.cancellation.clone();
+        let runtime = runtime.with_cancellation(cancellation.clone());
         match std::thread::Builder::new()
             .name("annif-suggest".into())
             .spawn(move || match processing::input_files(&paths) {
                 Ok(files) => {
-                    for path in files {
-                        if tx
-                            .send(Event::Result(processing::suggest(
-                                &runtime,
-                                &project_id,
-                                &path,
-                            )))
-                            .is_err()
-                        {
-                            break;
-                        }
-                    }
+                    processing::suggest_batch(
+                        &runtime,
+                        &project_id,
+                        &files,
+                        &cancellation,
+                        |result| tx.send(Event::Result(result)).is_ok(),
+                    );
                 }
                 Err(error) => {
                     let _ = tx.send(Event::Error(format!("{error:#}")));

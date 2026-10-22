@@ -4,6 +4,7 @@ use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub struct ProcessResult {
+    pub cancelled: bool,
     pub command: String,
     pub stdout: String,
     pub stderr: String,

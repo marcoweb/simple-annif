@@ -42,6 +42,13 @@ Na pasta que contém `AnnifManager/`:
 - [ ] Na cópia descartável, fechar a aplicação, renomear `runtime/` e abrir
       novamente: deve haver erro compreensível, sem fallback ou instalação.
       Restaurar a pasta; repetir retirando temporariamente `python.exe`.
+- [ ] Em dados descartáveis, cancelar treinamento e carga de vocabulário:
+      confirmar mensagem, logs preservados, ausência de processos Python do
+      pacote em segundo plano e liberação das ações; repetir a operação até sucesso.
+- [ ] Cancelar um lote de Suggest: preservar resultados anteriores e indicar os
+      documentos cancelados/não processados no JSON; rejeitar CSV incompleto.
+      Iniciar outra execução e confirmar conclusão normal. Trocar de aba durante
+      o encerramento e verificar que a aplicação continua responsiva.
 
 ## Resultado
 

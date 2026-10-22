@@ -1,10 +1,11 @@
-use crate::annif::{ProcessResult, Project};
+use crate::annif::{Cancellation, ProcessResult, Project};
 use crate::services::runtime::ApplicationRuntime;
 use eframe::egui;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
 pub struct TrainingUi {
+    cancellation: Cancellation,
     result_project: Option<String>,
     data_path: String,
     logs: Arc<Mutex<Vec<String>>>,
@@ -16,6 +17,7 @@ pub struct TrainingUi {
 impl Default for TrainingUi {
     fn default() -> Self {
         Self {
+            cancellation: Cancellation::default(),
             result_project: None,
             data_path: "".to_string(),
             logs: Arc::new(Mutex::new(Vec::new())),
@@ -101,6 +103,8 @@ impl TrainingUi {
         ui.add_space(20.0);
 
         if is_training {
+            super::cancel_button(ui, &self.cancellation);
+            ui.small("Interromper pode deixar o modelo incompleto. Execute o treinamento novamente antes de usar Suggest.");
             ui.ctx()
                 .request_repaint_after(std::time::Duration::from_millis(100));
             ui.horizontal(|ui| {
@@ -129,6 +133,9 @@ impl TrainingUi {
         let res_lock = self.result.lock().unwrap().clone();
         if let Some(res) = res_lock {
             match res {
+                Ok(p_res) if p_res.cancelled => {
+                    ui.label("Treinamento cancelado. Os logs foram preservados. Treine o projeto novamente antes de usar o modelo; arquivos parciais podem ter sido gravados.");
+                }
                 Ok(p_res) => {
                     ui.colored_label(
                         egui::Color32::from_rgb(21, 105, 46),
@@ -155,7 +162,8 @@ impl TrainingUi {
         let (tx, rx) = crossbeam_channel::unbounded();
         self.log_receiver = Some(rx);
 
-        let runtime_clone = runtime.clone();
+        self.cancellation = Cancellation::default();
+        let runtime_clone = runtime.with_cancellation(self.cancellation.clone());
         let project_id = project_id.to_string();
         let data_path = self.data_path.clone();
 

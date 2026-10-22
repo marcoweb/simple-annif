@@ -59,7 +59,7 @@
       "status": "passed"
     }
   ],
-  "date": "2026-10-16",
+  "date": "2026-10-22",
   "environment": "native_windows_build_machine",
   "windows": {
     "version": "25H2",
@@ -79,10 +79,10 @@
     "cargo_check_locked": "passed",
     "cargo_clippy_all_targets_deny_warnings": "passed",
     "cargo_test_locked": {
-      "passed": 20,
+      "passed": 24,
       "failed": 0,
       "ignored": 4,
-      "ignored_reason": "4 opt-in runtime tests not repeated for export-only change; earlier integrations retained in reports"
+      "ignored_reason": "4 opt-in runtime tests; existing_workflows_with_bundled_annif repeated separately with reload/retrain coverage"
     },
     "packaging_unittest": {
       "passed": 3,
@@ -99,15 +99,17 @@
         "TF-IDF, MLLM and Ensemble suggestions parsed into URI/label/score",
         "directory input expansion",
         "JSON export including explicit failure",
-        "workspace change and runtime rejection"
+        "workspace change and runtime rejection",
+        "repeat vocabulary load on Windows",
+        "retrain TF-IDF and MLLM on Windows"
       ],
       "network": "not blocked in Rust integration; blocked separately in packaged verify_runtime.py"
     }
   },
   "runtime_only": false,
   "artifact": "dist/AnnifManager-win64.zip",
-  "artifact_size_bytes": 171701914,
-  "artifact_sha256": "5759c78c2a9e76ecbd77ed0e63a105a02ac20077ae1509dbe3104e56605dd7c1",
+  "artifact_size_bytes": 171713519,
+  "artifact_sha256": "ba07824d3a40c7cc9a923ef700f0a13913fd299125d9a8bc5ff6e826b40cf4e1",
   "artifact_hash_check": "passed_independent_Get-FileHash_matches_sidecar",
   "pe_inspection": {
     "tool": "dumpbin 14.50.35726.0",
@@ -116,18 +118,18 @@
     "direct_vcruntime_or_msvcp_imports": false,
     "scope": "Rust executable only; Python extension DLL dependencies and clean-machine loading remain unverified"
   },
-  "extracted_zip_cli_test": "not repeated for export-only change; build-time verification passed all 8 commands",
-  "relocation_test": "passed on previous artifact; not repeated for export-only change",
+  "extracted_zip_cli_test": "not repeated for current artifact; build-time verification passed all 8 commands",
+  "relocation_test": "passed on earlier artifact; not repeated for cancellation change",
   "native_windows_test": "CLI and main GUI workflows passed on build machine",
-  "clean_windows_test": "not_run_no_clean_machine_available",
-  "desktop_application_test": "CSV export passed on current release; other native UI workflows retain earlier executable coverage in validation-ui-windows.json and project_form",
+  "clean_windows_test": "Earlier package: CLI passed and general GUI operation reported by user on another machine without Python; current cancellation feature pending there",
+  "desktop_application_test": "Current release cancellation/retry and partial export passed on build machine; earlier main-flow evidence retained in validation-ui-windows.json",
   "ui_flows_test": {
     "project_editor_and_listing": "passed_using_Windows_UIAutomation_on_intermediate_release",
     "all_tabs_light_background": "passed_headless_egui_regression_test",
     "vocabulary_training_suggest_export_native_ui": "passed on build machine; detailed executable coverage in validation-ui-windows.json",
     "final_screenshot": "target/funcional-final.png"
   },
-  "damaged_release_package_ui_test": "passed on earlier release; not repeated for export-only change",
+  "damaged_release_package_ui_test": "passed on earlier release; not repeated for cancellation change",
   "portable_validation_complete": false,
   "pending_checklist": "packaging/TESTE-WINDOWS-LIMPO.md",
   "previous_artifact": {
@@ -169,7 +171,7 @@
   "previous_functional_artifact_sha256": "855b34e13b571510e61fb42236735e6d8dcee0ceb0e3619b3b539053917cd5a3",
   "known_limits": [
     "Clean Windows validation pending",
-    "No timeout or cancellation",
+    "No timeout; cancellation limited to training, vocabulary load and Suggest",
     "Workspace preference lasts for current session only",
     "Full NALT corpus training and accuracy not evaluated; functional sample passed"
   ],
@@ -201,8 +203,8 @@
   },
   "local_installation_update": {
     "path": "D:/AnnifManager/AnnifManager.exe",
-    "backup": "D:/AnnifManager/AnnifManager.before-evametrics-export.exe",
-    "sha256": "d93e82fa02f1d45b7c07b0d5f3d98403a0583715002968d02930edd855bea9a4",
+    "backup": "D:/AnnifManager/AnnifManager.before-cancellation.exe",
+    "sha256": "e481b155e885a6a37f644dc82a3ac3ada2b0f6126aa4c979f485409a4ff9a44a",
     "scope": "executable only; runtime and workspace preserved",
     "hash_check": "passed"
   },
@@ -237,5 +239,14 @@
     "status": "passed",
     "report": "packaging/validation-evametrics.json",
     "scope": "native UI export and direct upstream parser compatibility; no browser upload"
+  },
+  "previous_cancellation_artifact_sha256": "5759c78c2a9e76ecbd77ed0e63a105a02ac20077ae1509dbe3104e56605dd7c1",
+  "cancellation": {
+    "status": "passed",
+    "report": "packaging/validation-cancellation.json"
+  },
+  "secondary_windows": {
+    "status": "partial_validation_reported_by_user",
+    "report": "packaging/validation-secondary-windows.json"
   }
 }

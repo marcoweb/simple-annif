@@ -16,7 +16,7 @@ pub fn render(results: &[DocumentResult]) -> Result<String> {
             "Exporte apenas um projeto por arquivo Evametrics."
         );
         ensure!(
-            result.error.is_none(),
+            !result.cancelled && result.error.is_none(),
             "O documento {} falhou no Suggest. Corrija a falha e processe novamente, ou use JSON para preservar os erros.",
             result.path
         );
@@ -82,6 +82,7 @@ mod tests {
             path: path.into(),
             project_id: "teste".into(),
             error: None,
+            cancelled: false,
             stdout: String::new(),
             stderr: String::new(),
             duration_ms: 0,

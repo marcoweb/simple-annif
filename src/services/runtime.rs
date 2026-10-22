@@ -11,6 +11,16 @@ pub enum ApplicationRuntime {
 }
 
 impl ApplicationRuntime {
+    /// Separate runtime snapshot and cancellation scope for each long operation.
+    pub fn with_cancellation(&self, cancellation: crate::annif::Cancellation) -> Self {
+        let mut runtime = self.clone();
+        match &mut runtime {
+            Self::System(inner) => inner.cancellation = cancellation,
+            Self::Embedded(inner) => inner.cancellation = cancellation,
+            Self::Unavailable(_) => {}
+        }
+        runtime
+    }
     pub fn context_key(&self) -> String {
         match self {
             Self::Embedded(runtime) => runtime.workspace().display().to_string(),

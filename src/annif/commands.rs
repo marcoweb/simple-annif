@@ -1,9 +1,9 @@
-use super::{ProcessResult, Project};
+use super::{Cancellation, ProcessResult, Project, process_tree::ProcessTree};
 use anyhow::{Context, Result};
 use std::io::{BufRead, BufReader, Read};
 use std::process::{Command, Stdio};
 use std::thread::{self, JoinHandle};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 fn description(command: &Command) -> String {
     std::iter::once(command.get_program())
@@ -30,6 +30,7 @@ pub fn run(mut command: Command) -> Result<ProcessResult> {
         format!("Não foi possível executar {description}. Verifique o caminho do executável, as permissões e a integridade do runtime")
     })?;
     Ok(ProcessResult {
+        cancelled: false,
         command: description,
         stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
         stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
@@ -39,6 +40,7 @@ pub fn run(mut command: Command) -> Result<ProcessResult> {
 }
 
 pub fn ensure_success(result: ProcessResult) -> Result<ProcessResult> {
+    anyhow::ensure!(!result.cancelled, "Operação cancelada pelo usuário");
     anyhow::ensure!(
         result.exit_code == Some(0),
         "Comando {} falhou (código {:?}):\n{}\n{}",
@@ -163,55 +165,92 @@ fn read_logs(
 }
 
 pub fn progressive(
+    command: Command,
+    sender: crossbeam_channel::Sender<String>,
+    cancellation: Cancellation,
+) -> Result<JoinHandle<Result<ProcessResult>>> {
+    Ok(thread::Builder::new()
+        .name("annif-process".into())
+        .spawn(move || {
+            let result = cancellable(command, sender, &cancellation)?;
+            if result.cancelled {
+                Ok(result)
+            } else {
+                ensure_success(result)
+            }
+        })?)
+}
+
+pub fn cancellable(
     mut command: Command,
     sender: crossbeam_channel::Sender<String>,
-) -> Result<JoinHandle<Result<ProcessResult>>> {
+    cancellation: &Cancellation,
+) -> Result<ProcessResult> {
     prepare(&mut command);
     let description = description(&command);
     let started = Instant::now();
-    let mut child = command
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .with_context(|| {
-            format!("Não foi possível executar {description}. Verifique a integridade do runtime")
-        })?;
-    let stdout = child
+    if cancellation.is_requested() {
+        return Ok(ProcessResult {
+            cancelled: true,
+            command: description,
+            stdout: String::new(),
+            stderr: String::new(),
+            exit_code: None,
+            duration: started.elapsed(),
+        });
+    }
+    command.stdout(Stdio::piped()).stderr(Stdio::piped());
+    let mut tree = ProcessTree::spawn(&mut command).with_context(|| {
+        format!("Não foi possível executar {description}. Verifique a integridade do runtime")
+    })?;
+    let stdout = tree
+        .child
         .stdout
         .take()
         .context("Não foi possível capturar stdout")?;
-    let stderr = child
+    let stderr = tree
+        .child
         .stderr
         .take()
         .context("Não foi possível capturar stderr")?;
     let output_sender = sender.clone();
     let out = thread::spawn(move || read_logs(stdout, output_sender, "STDOUT"));
     let err = thread::spawn(move || read_logs(stderr, sender, "STDERR"));
-    Ok(thread::spawn(move || {
-        let status = child.wait();
-        let stdout = out
-            .join()
-            .map_err(|_| anyhow::anyhow!("Falha na leitura de stdout"))?;
-        let stderr = err
-            .join()
-            .map_err(|_| anyhow::anyhow!("Falha na leitura de stderr"))?;
-        let stdout = stdout?;
-        let stderr = stderr?;
-        let status = status?;
-        if !status.success() {
-            anyhow::bail!(
-                "Comando {description} falhou (código {:?}): {stderr}",
-                status.code()
-            );
+    let mut cancelled = false;
+    let status = (|| -> Result<std::process::ExitStatus> {
+        loop {
+            // A result already completed wins over a late cancellation request.
+            if let Some(status) = tree.child.try_wait()? {
+                return Ok(status);
+            }
+            if cancellation.is_requested() {
+                tree.terminate()
+                    .context("Não foi possível encerrar o processo do Annif")?;
+                cancelled = true;
+                return Ok(tree.child.wait()?);
+            }
+            thread::sleep(Duration::from_millis(50));
         }
-        Ok(ProcessResult {
-            command: description,
-            stdout,
-            stderr,
-            exit_code: status.code(),
-            duration: started.elapsed(),
-        })
-    }))
+    })();
+    // Ensure child helpers cannot keep the output readers alive after CLI exit.
+    drop(tree);
+    let stdout = out
+        .join()
+        .map_err(|_| anyhow::anyhow!("Falha na leitura de stdout"))?;
+    let stderr = err
+        .join()
+        .map_err(|_| anyhow::anyhow!("Falha na leitura de stderr"))?;
+    let stdout = stdout?;
+    let stderr = stderr?;
+    let status = status?;
+    Ok(ProcessResult {
+        cancelled,
+        command: description,
+        stdout,
+        stderr,
+        exit_code: status.code(),
+        duration: started.elapsed(),
+    })
 }
 
 #[cfg(all(test, unix))]
@@ -226,7 +265,7 @@ mod tests {
             "printf 'progresso\\n'; printf 'falha técnica\\n' >&2; exit 9",
         ]);
         let (sender, receiver) = crossbeam_channel::unbounded();
-        let result = progressive(command, sender)?
+        let result = progressive(command, sender, Cancellation::default())?
             .join()
             .map_err(|_| anyhow::anyhow!("Worker falhou"))?;
         let error = result.expect_err("nonzero exit must fail").to_string();
@@ -266,6 +305,140 @@ mod parsing_tests {
         assert_eq!(project.name, "Ciência e computação");
         assert_eq!(project.backend, "tfidf");
         assert!(parse_project("Project ID: x\n").is_err());
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod cancellation_tests {
+    use super::*;
+    use std::io::Write;
+
+    fn fixture(mode: &str) -> Command {
+        let mut command = Command::new(std::env::current_exe().unwrap());
+        command
+            .args([
+                "--exact",
+                "annif::commands::cancellation_tests::process_fixture",
+                "--nocapture",
+            ])
+            .env("ANNIF_MANAGER_PROCESS_FIXTURE", mode);
+        prepare(&mut command);
+        command
+    }
+
+    #[test]
+    fn process_fixture() {
+        let Ok(mode) = std::env::var("ANNIF_MANAGER_PROCESS_FIXTURE") else {
+            return;
+        };
+        if mode == "tree" {
+            let mut child = fixture("sleep").spawn().unwrap();
+            println!("descendant={}", child.id());
+            std::io::stdout().flush().unwrap();
+            let _ = child.wait();
+        } else if mode == "sleep" {
+            println!("ready={}", std::process::id());
+            eprintln!("aviso com acentuação");
+            std::io::stdout().flush().unwrap();
+            thread::sleep(Duration::from_secs(30));
+        } else {
+            println!("conclusão");
+            eprintln!("diagnóstico");
+            if mode == "fail" {
+                std::process::exit(9);
+            }
+        }
+    }
+
+    #[test]
+    fn cancellation_ends_descendants_and_retains_both_streams() -> Result<()> {
+        let cancellation = Cancellation::default();
+        let (tx, rx) = crossbeam_channel::unbounded();
+        let handle = progressive(fixture("tree"), tx, cancellation.clone())?;
+        let deadline = Instant::now() + Duration::from_secs(10);
+        let mut ready = false;
+        let mut stderr = false;
+        let mut pid = None;
+        while !(ready && stderr && pid.is_some()) {
+            let line = rx.recv_timeout(deadline.saturating_duration_since(Instant::now()))?;
+            ready |= line.contains("ready=");
+            stderr |= line.contains("aviso com acentuação");
+            if let Some(value) = line.strip_prefix("[STDOUT] descendant=") {
+                pid = Some(value.parse::<u32>()?);
+            }
+        }
+        #[cfg(windows)]
+        let descendant = {
+            use std::os::windows::io::{FromRawHandle, OwnedHandle};
+            use windows_sys::Win32::System::Threading::{OpenProcess, PROCESS_SYNCHRONIZE};
+            // SAFETY: hold the precise descendant's handle to avoid PID reuse.
+            let raw = unsafe { OpenProcess(PROCESS_SYNCHRONIZE, 0, pid.unwrap()) };
+            anyhow::ensure!(
+                !raw.is_null(),
+                "Descendant must be alive before cancellation"
+            );
+            unsafe { OwnedHandle::from_raw_handle(raw) }
+        };
+        let started = Instant::now();
+        cancellation.cancel();
+        cancellation.cancel(); // repeated clicks must be harmless
+        let (done, completion) = crossbeam_channel::bounded(1);
+        thread::spawn(move || {
+            let _ = done.send(handle.join().unwrap());
+        });
+        let result = completion.recv_timeout(Duration::from_secs(5))??;
+        assert!(result.cancelled);
+        assert!(started.elapsed() < Duration::from_secs(5));
+        assert!(result.stdout.contains("ready="));
+        assert!(result.stderr.contains("aviso com acentuação"));
+        #[cfg(windows)]
+        {
+            use std::os::windows::io::AsRawHandle;
+            use windows_sys::Win32::{
+                Foundation::WAIT_OBJECT_0, System::Threading::WaitForSingleObject,
+            };
+            // SAFETY: valid process handle owned above, bounded wait.
+            assert_eq!(
+                unsafe { WaitForSingleObject(descendant.as_raw_handle(), 1000) },
+                WAIT_OBJECT_0
+            );
+        }
+        // A fresh operation is independent of the cancelled token.
+        let (tx, _rx) = crossbeam_channel::unbounded();
+        let next = progressive(fixture("success"), tx, Cancellation::default())?
+            .join()
+            .unwrap()?;
+        assert!(!next.cancelled);
+        assert_eq!(next.exit_code, Some(0));
+        Ok(())
+    }
+
+    #[test]
+    fn pre_cancel_does_not_spawn_and_late_cancel_does_not_change_success() -> Result<()> {
+        let cancellation = Cancellation::default();
+        cancellation.cancel();
+        let (tx, _rx) = crossbeam_channel::unbounded();
+        let result = cancellable(
+            Command::new("annif-manager-must-not-exist"),
+            tx,
+            &cancellation,
+        )?;
+        assert!(result.cancelled);
+        assert_eq!(result.exit_code, None);
+        let cancellation = Cancellation::default();
+        let (tx, _rx) = crossbeam_channel::unbounded();
+        let result = cancellable(fixture("success"), tx, &cancellation)?;
+        cancellation.cancel();
+        assert!(!result.cancelled);
+        assert!(result.stdout.contains("conclusão"));
+        let (tx, _rx) = crossbeam_channel::unbounded();
+        let failure = progressive(fixture("fail"), tx, Cancellation::default())?
+            .join()
+            .unwrap()
+            .unwrap_err();
+        assert!(failure.to_string().contains('9'));
+        assert!(failure.to_string().contains("diagnóstico"));
         Ok(())
     }
 }
