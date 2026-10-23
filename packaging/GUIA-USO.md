@@ -6,12 +6,12 @@
    automaticamente e pode ser alterado.
 2. Escolha o idioma dos documentos e informe o ID do vocabulário, como `nalt`.
    Se já houver vocabulários configurados, escolha um na lista de existentes.
-3. Escolha **TF-IDF** ou **MLLM** e clique em **Criar projeto**. A aplicação salva
+3. Escolha **TF-IDF**, **MLLM** ou **Omikuji** e clique em **Criar projeto**. A aplicação salva
    um novo arquivo no workspace, atualiza a lista e seleciona o projeto criado.
 4. Em **Vocabulários**, carregue o arquivo correspondente ao ID informado.
    Depois vá à aba **Treinamento** e, ao concluir, à aba **Sugestões de descritores**.
 
-Para criar um **Ensemble**, escolha pelo menos dois projetos TF-IDF/MLLM com o
+Para criar um **Ensemble**, escolha pelo menos dois projetos TF-IDF/MLLM/Omikuji com o
 mesmo idioma e vocabulário. Os pesos começam iguais. Treine as fontes antes
 de gerar sugestões de descritores; não é necessário treinar o Ensemble separadamente.
 
@@ -47,6 +47,37 @@ convertidos para TOML antes de usar o formulário.
 
 Os exemplos são pequenos dados didáticos, não modelos prontos para uso real.
 Substitua projetos, vocabulário e corpus pelos seus dados para uso produtivo.
+
+## Usar Omikuji (versão 0.2.0)
+
+Em **Projetos → Novo projeto**, escolha **Omikuji**. Informe o idioma e o
+vocabulário dos documentos. Carregue o vocabulário, treine com textos associados
+às URIs dos descritores e use **Sugerir descritores**. O backend já está incluído
+no pacote Windows e não exige instalação nem download na primeira execução.
+
+O formulário usa os padrões do Annif para Omikuji (Parabel). Para experimentar
+com os exemplos acima, crie um projeto Omikuji em português com vocabulário
+`meu-vocab` e treine com `examples/treinamento.tsv`. O arquivo
+`examples/projects-omikuji.toml` também oferece um projeto Omikuji e um Ensemble
+que o combina com `meu-tfidf`; copie-o para `workspace/projects/` apenas se esses
+IDs ainda não existirem. Treine ambas as fontes antes de usar esse Ensemble.
+
+Para NALT em inglês, use vocabulário `nalt` e idioma `en`. O arquivo
+`examples/projects-nalt-omikuji.toml` contém essa configuração; ele complementa
+`projects-nalt.toml`. O RDF é o vocabulário, não o corpus de treinamento.
+
+Corpora grandes podem exigir bastante memória e tempo. O treinamento usa os
+núcleos disponíveis; parâmetros como `min_df`, `ngram`, `cluster_k` e `max_depth`
+podem ser ajustados no editor TOML avançado, conforme a
+[documentação do Annif](https://github.com/NatLibFi/Annif/wiki/Backend%3A-Omikuji).
+Cancelamento, logs, tempo decorrido e exportações funcionam como nos demais
+métodos. O tempo restante de treinamento continua indisponível. Depois de
+cancelar, repita o treinamento até concluir antes de usar o modelo.
+
+Ao atualizar de uma versão anterior, use o **pacote completo**: trocar apenas
+o EXE não instala o Omikuji no runtime antigo. Preserve seu workspace e mantenha
+uma cópia da instalação anterior. Modelos existentes TF-IDF/MLLM continuam
+separados; um projeto Omikuji precisa de seu próprio treinamento.
 
 ## Formatos
 

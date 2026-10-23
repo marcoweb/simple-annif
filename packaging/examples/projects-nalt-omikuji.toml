@@ -1,0 +1,6 @@
+[nalt-omikuji]
+name = "NALT Omikuji"
+backend = "omikuji"
+language = "en"
+analyzer = "snowball(english)"
+vocab = "nalt"

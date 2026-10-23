@@ -42,12 +42,13 @@ def verify(runtime):
     nltk.data.find("tokenizers/punkt_tab/english/")
     nltk.data.find("tokenizers/punkt_tab/portuguese/")
     nltk.data.find("corpora/stopwords/")
-    for backend in ["tfidf", "mllm", "ensemble"]:
+    for backend in ["tfidf", "mllm", "omikuji", "ensemble"]:
         annif.backend.get_backend(backend)
 
     report = {
         "python": sys.version.split()[0],
         "annif": importlib.metadata.version("annif"),
+        "omikuji": importlib.metadata.version("omikuji"),
         "numpy": numpy.__version__,
         "scikit_learn": sklearn.__version__,
         "architecture": "x64",
@@ -73,12 +74,19 @@ analyzer = "snowball(portuguese)"
 vocab = "smoke"
 min_samples_leaf = 1
 
+[smoke-omikuji]
+name = "Prova Omikuji"
+backend = "omikuji"
+language = "pt"
+analyzer = "snowball(portuguese)"
+vocab = "smoke"
+
 [smoke-ensemble]
 name = "Prova Ensemble"
 backend = "ensemble"
 language = "pt"
 vocab = "smoke"
-sources = "smoke-tfidf:1.0,smoke-mllm:1.0"
+sources = "smoke-tfidf:1.0,smoke-mllm:1.0,smoke-omikuji:1.0"
 ''', encoding="utf-8")
         computing = "https://example.org/computacao"
         gardening = "https://example.org/jardinagem"
@@ -116,12 +124,12 @@ sources = "smoke-tfidf:1.0,smoke-mllm:1.0"
 
         cli("--version")
         listing = cli("list-projects")
-        if not all(name in listing for name in ["smoke-tfidf", "smoke-mllm", "smoke-ensemble"]):
+        if not all(name in listing for name in ["smoke-tfidf", "smoke-mllm", "smoke-omikuji", "smoke-ensemble"]):
             raise RuntimeError("A CLI não encontrou os projetos do workspace")
         cli("load-vocab", "smoke", str(vocab), "--language", "pt")
-        for backend in ["tfidf", "mllm"]:
+        for backend in ["tfidf", "mllm", "omikuji"]:
             cli("train", f"smoke-{backend}", str(dataset), "--jobs", "1")
-        for backend in ["tfidf", "mllm", "ensemble"]:
+        for backend in ["tfidf", "mllm", "omikuji", "ensemble"]:
             suggestions = cli("suggest", f"smoke-{backend}", str(document))
             if computing not in suggestions:
                 raise RuntimeError(f"O backend {backend} não retornou o descritor esperado:\n{suggestions}")

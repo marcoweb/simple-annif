@@ -17,7 +17,9 @@ somente o ZIP pronto, descompacta e abre `AnnifManager.exe`.
 
 A versão de Python respeita o intervalo suportado pelo
 [Annif publicado no PyPI](https://pypi.org/pypi/annif/1.4.2/json).
-Não são instalados extras de PyTorch, Transformers, fastText, spaCy ou Omikuji.
+Omikuji **0.5.2** está incluído a partir da versão **0.2.0** do aplicativo,
+com wheel oficial para CPython 3.13/Windows x64 e dependências fixadas.
+Não são instalados extras de PyTorch, Transformers, fastText ou spaCy.
 A ferramenta registra as versões de todas as bibliotecas no manifesto.
 
 ## Gerar o pacote completo no Windows
@@ -102,18 +104,19 @@ outros diretórios. Não há instalação de pacotes no Python global.
 
 `verify_runtime.py` roda com o Python do pacote em modo isolado e UTF-8. Ele
 confere que `sys.path` permanece dentro do runtime e que NumPy, scikit-learn e
-os três backends prioritários carregam. Em um workspace temporário com espaços
+os quatro backends (TF-IDF, MLLM, Omikuji e Ensemble) carregam. Em um workspace temporário com espaços
 e Unicode, executa:
 
 1. Versão do Annif e listagem de projetos.
 2. Carga de vocabulário TSV com descritores em português.
-3. Treinamento TF-IDF e MLLM com exemplos positivos e negativos.
-4. Suggest TF-IDF, MLLM e Ensemble, exigindo o descritor esperado e saída Unicode.
+3. Treinamento TF-IDF, MLLM e Omikuji com exemplos positivos e negativos.
+4. Sugestões TF-IDF, MLLM, Omikuji e Ensemble (com as três fontes), exigindo
+   o descritor esperado e saída Unicode.
 
 As conexões de rede são bloqueadas dentro dos processos Python da CLI. Os dados
 NLTK são buscados exclusivamente no runtime durante o teste. Isso verifica
 operações reais sem downloads; não testa todos os idiomas, configurações de
-projeto ou bibliotecas opcionais. Ensemble usa os modelos dos dois backends
+projeto ou bibliotecas opcionais. Ensemble usa os modelos dos três backends
 já treinados e não é treinado separadamente.
 
 O relatório pode ser regenerado no Windows após descompactar e mover o pacote:

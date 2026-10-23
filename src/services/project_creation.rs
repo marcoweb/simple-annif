@@ -142,7 +142,7 @@ pub fn validate(draft: &Draft) -> Result<()> {
         "Informe o ID do vocabulário usando letras, números, hífen ou sublinhado."
     );
     ensure!(
-        ["tfidf", "mllm", "ensemble"].contains(&draft.backend.as_str()),
+        ["tfidf", "mllm", "omikuji", "ensemble"].contains(&draft.backend.as_str()),
         "Selecione um método."
     );
     if draft.backend == "ensemble" {
@@ -182,8 +182,8 @@ pub fn create(runtime: &ApplicationRuntime, draft: &Draft) -> Result<PathBuf> {
                 existing.iter().any(|p| &p.id == id
                     && p.language == draft.language
                     && p.vocab == draft.vocab.trim()
-                    && ["tfidf", "mllm"].contains(&p.backend.as_str())),
-                "O projeto {id} deve usar o mesmo idioma e vocabulário e ser TF-IDF ou MLLM."
+                    && ["tfidf", "mllm", "omikuji"].contains(&p.backend.as_str())),
+                "O projeto {id} deve usar o mesmo idioma e vocabulário e ser TF-IDF, MLLM ou Omikuji."
             );
         }
         fields.insert(
@@ -268,6 +268,53 @@ mod tests {
             )
             .is_err()
         );
+        Ok(())
+    }
+
+    #[test]
+    fn omikuji_uses_the_selected_language_and_can_feed_an_ensemble() -> Result<()> {
+        let (_dir, runtime) = setup()?;
+        for (language, analyzer) in [("pt", "portuguese"), ("en", "english"), ("es", "spanish")] {
+            let draft = Draft {
+                name: "Omikuji".into(),
+                id: format!("omikuji-{language}"),
+                language: language.into(),
+                vocab: "nalt".into(),
+                backend: "omikuji".into(),
+                ..Default::default()
+            };
+            let path = create(&runtime, &draft)?;
+            let parsed: toml::Table = toml::from_str(&std::fs::read_to_string(path)?)?;
+            assert_eq!(parsed[&draft.id]["backend"].as_str(), Some("omikuji"));
+            assert_eq!(
+                parsed[&draft.id]["analyzer"].as_str(),
+                Some(format!("snowball({analyzer})").as_str())
+            );
+        }
+        let base = Draft {
+            name: "Fonte".into(),
+            id: "tfidf-pt".into(),
+            vocab: "nalt".into(),
+            ..Default::default()
+        };
+        create(&runtime, &base)?;
+        let ensemble = Draft {
+            id: "ensemble".into(),
+            backend: "ensemble".into(),
+            sources: vec!["omikuji-pt".into(), "tfidf-pt".into()],
+            ..base
+        };
+        assert!(
+            create(
+                &runtime,
+                &Draft {
+                    sources: vec!["omikuji-en".into(), "tfidf-pt".into()],
+                    ..ensemble.clone()
+                }
+            )
+            .is_err()
+        );
+        create(&runtime, &ensemble)?;
         Ok(())
     }
 

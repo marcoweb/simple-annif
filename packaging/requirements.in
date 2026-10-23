@@ -1,1 +1,2 @@
-annif==1.4.2
+annif[omikuji]==1.4.2
+omikuji==0.5.2

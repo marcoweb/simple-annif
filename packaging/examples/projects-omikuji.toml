@@ -1,0 +1,15 @@
+# Omikuji padrão (Parabel). Compartilha o vocabulário dos exemplos incluídos.
+# Treine meu-omikuji e meu-tfidf antes de usar o Ensemble abaixo.
+[meu-omikuji]
+name = "Meu projeto Omikuji"
+backend = "omikuji"
+language = "pt"
+analyzer = "snowball(portuguese)"
+vocab = "meu-vocab"
+
+[ensemble-omikuji]
+name = "TF-IDF e Omikuji"
+backend = "ensemble"
+language = "pt"
+vocab = "meu-vocab"
+sources = "meu-tfidf:1.0,meu-omikuji:1.0"

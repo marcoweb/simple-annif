@@ -6,7 +6,7 @@ use anyhow::{Context, Result};
 use std::path::PathBuf;
 
 #[test]
-#[ignore = "requer ANNIF_TEST_PACKAGE para validar os três métodos criados pelo formulário"]
+#[ignore = "requer ANNIF_TEST_PACKAGE para validar os quatro métodos criados pelo formulário"]
 fn form_projects_with_bundled_annif() -> Result<()> {
     use crate::services::project_creation::{self, Draft};
     let package = PathBuf::from(std::env::var("ANNIF_TEST_PACKAGE")?);
@@ -32,15 +32,27 @@ fn form_projects_with_bundled_annif() -> Result<()> {
     project_creation::create(
         &runtime,
         &Draft {
+            id: "agricultura-omikuji".into(),
+            backend: "omikuji".into(),
+            ..draft.clone()
+        },
+    )?;
+    project_creation::create(
+        &runtime,
+        &Draft {
             id: "agricultura-ensemble".into(),
             backend: "ensemble".into(),
-            sources: vec!["agricultura-tfidf".into(), "agricultura-mllm".into()],
+            sources: vec![
+                "agricultura-tfidf".into(),
+                "agricultura-mllm".into(),
+                "agricultura-omikuji".into(),
+            ],
             ..draft
         },
     )?;
     let listed = runtime.list_projects()?;
-    assert_eq!(listed.len(), 3);
-    for backend in ["tfidf", "mllm", "ensemble"] {
+    assert_eq!(listed.len(), 4);
+    for backend in ["tfidf", "mllm", "omikuji", "ensemble"] {
         assert!(
             listed
                 .iter()
@@ -135,14 +147,20 @@ fn existing_workflows_with_bundled_annif() -> Result<()> {
         &workspace.join("projects/projetos ação.toml"),
         projects::EXAMPLE,
     )?;
+    projects::save_for_runtime(
+        &runtime,
+        &workspace.join("projects/omikuji.toml"),
+        include_str!("../../packaging/examples/projects-omikuji.toml"),
+    )?;
     let listed = runtime.list_projects()?;
-    assert_eq!(listed.len(), 3);
+    assert_eq!(listed.len(), 5);
     assert!(
         listed
             .iter()
             .any(|p| p.name == "Meu projeto TF-IDF" && p.backend == "tfidf")
     );
     assert!(listed.iter().any(|p| p.backend == "mllm"));
+    assert!(listed.iter().any(|p| p.backend == "omikuji"));
     assert!(listed.iter().any(|p| p.backend == "ensemble"));
     let available = vocabularies::list(&runtime)?;
     assert_eq!(available.len(), 1);
@@ -190,7 +208,14 @@ fn existing_workflows_with_bundled_annif() -> Result<()> {
             )?;
         }
     }
-    for project in ["meu-tfidf", "meu-mllm", "meu-tfidf", "meu-mllm"] {
+    for project in [
+        "meu-tfidf",
+        "meu-mllm",
+        "meu-omikuji",
+        "meu-tfidf",
+        "meu-mllm",
+        "meu-omikuji",
+    ] {
         let (tx, rx) = crossbeam_channel::unbounded();
         let trained = training::start(&runtime, project, &corpus.to_string_lossy(), tx)?
             .join()
@@ -208,7 +233,13 @@ fn existing_workflows_with_bundled_annif() -> Result<()> {
     let files = processing::input_files(&[inputs.display().to_string()])?;
     assert_eq!(files.len(), 1);
     let mut results = Vec::new();
-    for project in ["meu-tfidf", "meu-mllm", "meu-ensemble"] {
+    for project in [
+        "meu-tfidf",
+        "meu-mllm",
+        "meu-omikuji",
+        "meu-ensemble",
+        "ensemble-omikuji",
+    ] {
         let result = processing::suggest(&runtime, project, &files[0]);
         assert!(result.error.is_none(), "{:?}", result.error);
         assert!(
@@ -225,9 +256,9 @@ fn existing_workflows_with_bundled_annif() -> Result<()> {
     let exported = workspace.join("results/sugestões.json");
     processing::export(&exported, &results)?;
     let json: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(exported)?)?;
-    assert_eq!(json.as_array().unwrap().len(), 4);
+    assert_eq!(json.as_array().unwrap().len(), 6);
     assert!(json[0]["suggestions"][0]["score"].is_number());
-    assert!(json[3]["error"].is_string());
+    assert!(json[5]["error"].is_string());
     runtime.configure_workspace(&temporary.path().join("outro workspace"))?;
     assert!(runtime.list_projects()?.is_empty());
     assert!(
@@ -235,6 +266,92 @@ fn existing_workflows_with_bundled_annif() -> Result<()> {
             .configure_workspace(&package.join("runtime"))
             .is_err()
     );
+    Ok(())
+}
+
+#[test]
+#[ignore = "requer ANNIF_TEST_PACKAGE, ANNIF_TEST_CORPUS e ANNIF_TEST_NALT_MODELS; testa cancelamento Omikuji e amostra NALT"]
+fn omikuji_nalt_with_bundled_annif() -> Result<()> {
+    let package = PathBuf::from(std::env::var("ANNIF_TEST_PACKAGE")?);
+    let corpus = PathBuf::from(std::env::var("ANNIF_TEST_CORPUS")?);
+    let vocabulary = PathBuf::from(std::env::var("ANNIF_TEST_NALT_MODELS")?);
+    let temporary = TestDirectory::new()?;
+    let mut runtime = ApplicationRuntime::from_application_dir(&package, false)?;
+    runtime.configure_workspace(temporary.path())?;
+    super::project_creation::create(
+        &runtime,
+        &super::project_creation::Draft {
+            name: "NALT Omikuji".into(),
+            id: "nalt-omikuji".into(),
+            language: "en".into(),
+            vocab: "nalt".into(),
+            backend: "omikuji".into(),
+            ..Default::default()
+        },
+    )?;
+    let destination = temporary.path().join("models/vocabs/nalt");
+    std::fs::create_dir_all(&destination)?;
+    for name in ["subjects.csv", "subjects.ttl", "subjects.dump.gz"] {
+        std::fs::copy(vocabulary.join(name), destination.join(name))?;
+    }
+    let token = crate::annif::Cancellation::default();
+    let cancellable = runtime.with_cancellation(token.clone());
+    let (tx, rx) = crossbeam_channel::unbounded();
+    let worker = training::start(
+        &cancellable,
+        "nalt-omikuji",
+        &corpus.join("train").to_string_lossy(),
+        tx,
+    )?;
+    // Cancel after Annif starts preprocessing, not before spawning Python.
+    let mut observed = false;
+    while let Ok(line) = rx.recv_timeout(std::time::Duration::from_secs(90)) {
+        if line.contains("creating vectorizer") {
+            observed = true;
+            break;
+        }
+    }
+    token.cancel();
+    let cancelled = worker
+        .join()
+        .map_err(|_| anyhow::anyhow!("Worker falhou"))??;
+    assert!(observed, "Nenhum log de preparação Omikuji observado");
+    assert!(
+        cancelled.cancelled,
+        "A operação terminou sem confirmar cancelamento"
+    );
+    println!("Omikuji: cancelled after preprocessing began; logs retained");
+    let (tx, _rx) = crossbeam_channel::unbounded();
+    let trained = training::start(
+        &runtime,
+        "nalt-omikuji",
+        &corpus.join("train").to_string_lossy(),
+        tx,
+    )?
+    .join()
+    .map_err(|_| anyhow::anyhow!("Worker falhou"))??;
+    assert_eq!(trained.exit_code, Some(0));
+    println!(
+        "NALT Omikuji trained after cancellation: {} ms",
+        trained.duration.as_millis()
+    );
+    let files = processing::input_files(&[corpus.join("test").display().to_string()])?;
+    assert_eq!(files.len(), 5);
+    let mut results = Vec::new();
+    for file in files {
+        let result = processing::suggest(&runtime, "nalt-omikuji", &file);
+        assert!(result.error.is_none(), "{:?}", result.error);
+        assert!(!result.suggestions.is_empty());
+        assert!(result.suggestions.iter().all(|s| s.uri.starts_with("https://lod.nal.usda.gov/nalt/") && s.score.is_finite()));
+        results.push(result);
+    }
+    let export = temporary.path().join("results/nalt-omikuji.json");
+    processing::export(&export, &results)?;
+    let json: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(export)?)?;
+    assert_eq!(json.as_array().unwrap().len(), 5);
+    let csv = super::evametrics::render(&results)?;
+    assert!(csv.starts_with("ID;Titulo;Descriptores"));
+    println!("NALT Omikuji: 5 documents with valid URIs/scores, JSON and Evametrics CSV passed");
     Ok(())
 }
 

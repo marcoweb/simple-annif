@@ -59,6 +59,16 @@ e do [modo isolado](https://docs.python.org/3/using/cmdline.html#cmdoption-I).
 
 ## Estado atual
 
+A versão **0.2.0** inclui **Omikuji 0.5.2** no runtime Windows e no formulário
+de projetos, além de TF-IDF, MLLM e Ensemble. Projetos Omikuji podem ser fontes
+de Ensemble com o mesmo idioma e vocabulário. Treinamento, cancelamento,
+sugestões e exportações usam os fluxos existentes. O formulário usa a
+configuração padrão Parabel do Annif; ajustes avançados ficam no TOML.
+
+Para atualizar, use o pacote completo: o executável sozinho não acrescenta
+Omikuji a um runtime antigo. Preserve o workspace e uma cópia da instalação
+anterior. Veja [como usar Omikuji](packaging/GUIA-USO.md#usar-omikuji-versão-020).
+
 O runtime incorporado está implementado e conectado às telas existentes.
 A aplicação abre em **Diagnóstico**, mostrando o runtime selecionado. A
 verificação mostra stdout, stderr, código de saída e duração, em segundo plano.
@@ -117,7 +127,7 @@ da execução. Treinamento/carga mostram etapas, com tempo restante indisponíve
 porque o Annif não fornece progresso total. Consulte o
 [guia de uso](packaging/GUIA-USO.md#acompanhar-o-tempo-e-o-progresso).
 
-Formatação, check, Clippy, 26 testes Rust e três testes Python passaram.
+Formatação, check, Clippy, 28 testes Rust e três testes Python passaram.
 Cancelamento de processos e recuperação estão registrados em
 [validation-cancellation.json](packaging/validation-cancellation.json).
 Corrigida também a substituição de arquivos do Annif no Windows ao repetir

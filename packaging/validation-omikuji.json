@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-23",
+  "application_version": "0.2.0",
+  "environment": "native_windows_build_machine",
+  "dependencies": {
+    "omikuji": "0.5.2",
+    "milksnake": "0.1.6",
+    "cffi": "2.1.1",
+    "pycparser": "3.12",
+    "previous_62_versions": "preserved",
+    "total_locked": 66,
+    "wheel": "omikuji-0.5.2-cp313-cp313-win_amd64.whl",
+    "wheel_sha256": "0cfad8d1a7dee3ff4089fa1d4b712ad2ba4403b23b98479395337388a4c67bb5",
+    "source": "https://pypi.org/pypi/omikuji/0.5.2/json"
+  },
+  "implementation": {
+    "form": "Omikuji with Annif default Parabel settings, pt/en/es Snowball analyzers; compatible Omikuji projects accepted as Ensemble sources",
+    "logs": "Omikuji native stdout logs recognized only by timestamp/level/module prefix; full stdout retained; malformed suggestions still rejected",
+    "progress": "existing elapsed clock and cancellation; no training ETA",
+    "runtime": "official binary wheels with hashes; no Python/Rust/pip installation on target; all previous versions retained"
+  },
+  "checks": {
+    "fmt_check_clippy": "passed",
+    "rust_tests": {
+      "passed": 28,
+      "failed": 0,
+      "ignored": 5
+    },
+    "python_tests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "runtime_verification": {
+      "passed": 10,
+      "network": "blocked_in_python_cli",
+      "report": "verification.json in ZIP"
+    },
+    "service_integrations": {
+      "passed": 3,
+      "failed": 0,
+      "duration_seconds": 117.74,
+      "tests": [
+        "existing_workflows_with_bundled_annif",
+        "form_projects_with_bundled_annif",
+        "omikuji_nalt_with_bundled_annif"
+      ],
+      "scope": "four form methods; repeated vocabulary load; repeated TF-IDF/MLLM/Omikuji training; suggestions in all backends and Ensemble with Omikuji; JSON and workspace handling"
+    },
+    "nalt": {
+      "training_documents": 100,
+      "reserved_documents": 5,
+      "vocabulary_subjects": 76691,
+      "cancellation": "confirmed after preprocessing began; retraining succeeded",
+      "retry_training_ms": 3710,
+      "suggestions": "5 results with NALT URIs and finite scores",
+      "exports": "JSON and Evametrics CSV renderer passed",
+      "quality_evaluation": false
+    },
+    "native_ui": "passed: version 0.2.0, Omikuji form creation/selection, vocabulary load, cancel training, retry, known descriptor Computação with 1/1 success",
+    "native_ui_workspace": "target/Validação Omikuji 0.2.0/AnnifManager/workspace",
+    "native_dll_inspection": {
+      "tool": "dumpbin 14.50.35726.0",
+      "binaries": [
+        "omikuji/_libomikuji__lib.dll",
+        "_cffi_backend.cp313-win_amd64.pyd"
+      ],
+      "imports": "Windows system/API-set DLLs, python313.dll for CFFI, VCRUNTIME140.dll already included at runtime root",
+      "scope": "direct DLL import inspection; clean-machine validation pending"
+    }
+  },
+  "artifact": {
+    "path": "dist/AnnifManager-0.2.0-win64.zip",
+    "sha256": "fc6d2360759cc48749fe4491306200ab708aeef720d3ec3a91708a25b8a94bbc",
+    "size_bytes": 172390229,
+    "alias": "dist/AnnifManager-win64.zip",
+    "executable_sha256": "4cadebb190ce5ef4e5d92f38cbe04e7a1680ebc9d241e6162c0f11271b4de315"
+  },
+  "installation": {
+    "path": "D:/AnnifManager",
+    "backup": "D:/AnnifManager/backup-before-0.2.0",
+    "workspace": "untouched",
+    "files": "staged and hash-verified before replacement; runtime upgraded with executable"
+  },
+  "limitations": [
+    "Omikuji not yet tested on a clean Windows machine",
+    "Large-corpus resource use and classification quality not assessed",
+    "Previous external-machine report predates Omikuji"
+  ],
+  "portable_validation_complete": false
+}

@@ -147,10 +147,11 @@ pub fn phase_from_log(line: &str) -> Option<&'static str> {
         .map_or(text, |(_, message)| message);
     match text {
         "starting train" => Some("Iniciando treinamento"),
-        "preparing training data" | "creating vectorizer" => {
+        "preparing training data" | "creating vectorizer" | "creating train file" => {
             Some("Preparando dados de treinamento")
         }
-        "reusing cached training data from previous run" => {
+        "reusing cached training data from previous run"
+        | "Reusing cached training data from previous run." => {
             Some("Lendo dados de treinamento preparados")
         }
         "training model" | "transforming subject corpus" => Some("Treinando modelo"),

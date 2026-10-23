@@ -22,6 +22,7 @@ impl DiagnosticsUi {
     pub fn ui(&mut self, ui: &mut egui::Ui, runtime: &mut ApplicationRuntime) {
         let is_checking = self.receiver.is_some();
         ui.heading("Diagnóstico de Ambiente");
+        ui.label(concat!("Annif Manager ", env!("CARGO_PKG_VERSION")));
         ui.label(format!(
             "Sistema: {} / {}",
             std::env::consts::OS,

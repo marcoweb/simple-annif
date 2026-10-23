@@ -75,10 +75,12 @@ impl ProjectForm {
             ui.horizontal_wrapped(|ui| {
                 ui.radio_value(&mut self.draft.backend, "tfidf".into(), "TF-IDF");
                 ui.radio_value(&mut self.draft.backend, "mllm".into(), "MLLM");
+                ui.radio_value(&mut self.draft.backend, "omikuji".into(), "Omikuji");
                 ui.radio_value(&mut self.draft.backend, "ensemble".into(), "Ensemble");
             });
             ui.label(match self.draft.backend.as_str() {
                 "mllm" => "MLLM procura termos do vocabulário no texto e aprende com documentos já classificados.",
+                "omikuji" => "Omikuji aprende com textos associados a descritores e organiza as decisões em árvores. Usa a configuração padrão Parabel; corpora grandes podem exigir mais memória e tempo de treinamento.",
                 "ensemble" => "Ensemble combina as sugestões de projetos existentes. Treine os projetos fonte antes de sugerir descritores.",
                 _ => "TF-IDF usa a importância das palavras nos documentos de treinamento. Uma opção simples para começar.",
             });
@@ -86,9 +88,9 @@ impl ProjectForm {
                 ui.add_space(6.0);
                 ui.strong("Projetos para combinar");
                 self.draft.sources.retain(|id| self.catalog.iter().any(|p| &p.id == id && p.language == self.draft.language
-                    && p.vocab == self.draft.vocab.trim() && ["tfidf", "mllm"].contains(&p.backend.as_str())));
+                    && p.vocab == self.draft.vocab.trim() && ["tfidf", "mllm", "omikuji"].contains(&p.backend.as_str())));
                 let candidates: Vec<_> = self.catalog.iter().filter(|p| p.language == self.draft.language
-                    && p.vocab == self.draft.vocab.trim() && ["tfidf", "mllm"].contains(&p.backend.as_str())).collect();
+                    && p.vocab == self.draft.vocab.trim() && ["tfidf", "mllm", "omikuji"].contains(&p.backend.as_str())).collect();
                 for p in &candidates {
                     let mut selected = self.draft.sources.contains(&p.id);
                     if ui.checkbox(&mut selected, format!("{} ({})", p.name, p.id)).changed() {
@@ -96,7 +98,7 @@ impl ProjectForm {
                         else { self.draft.sources.retain(|id| id != &p.id); }
                     }
                 }
-                if candidates.len() < 2 { ui.label("Crie primeiro dois projetos TF-IDF ou MLLM com o mesmo idioma e vocabulário."); }
+                if candidates.len() < 2 { ui.label("Crie primeiro dois projetos TF-IDF, MLLM ou Omikuji com o mesmo idioma e vocabulário."); }
                 ui.small("Os projetos selecionados terão pesos iguais. Ajustes de pesos ficam no editor avançado.");
             }
             ui.add_space(12.0);

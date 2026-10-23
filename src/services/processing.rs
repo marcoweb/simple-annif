@@ -23,9 +23,42 @@ pub struct DocumentResult {
     pub duration_ms: u128,
 }
 
+// Omikuji 0.5.2's native logger writes to stdout. Recognize its complete
+// timestamp/level/module prefix only; unknown output still fails parsing.
+// DocumentResult retains the original stdout, including these log lines.
+fn is_omikuji_log(line: &str) -> bool {
+    let Some((timestamp, rest)) = line.split_once(' ') else {
+        return false;
+    };
+    let expected = b"0000-00-00T00:00:00.000Z";
+    if timestamp.len() != expected.len()
+        || !timestamp.bytes().zip(expected).all(|(actual, expected)| {
+            if *expected == b'0' {
+                actual.is_ascii_digit()
+            } else {
+                actual == *expected
+            }
+        })
+    {
+        return false;
+    }
+    let mut fields = rest.splitn(2, char::is_whitespace);
+    let level = fields.next().unwrap_or_default();
+    let module = fields.next().unwrap_or_default().trim_start();
+    ["ERROR", "WARN", "INFO", "DEBUG", "TRACE"].contains(&level)
+        && module
+            .strip_prefix('[')
+            .and_then(|s| s.split_once("] "))
+            .is_some_and(|(name, _)| name == "omikuji" || name.starts_with("omikuji::"))
+}
+
 pub fn parse_suggestions(text: &str) -> Result<Vec<Suggestion>> {
     text.lines()
-        .filter(|line| !line.trim().is_empty() && !line.starts_with("Suggestions for "))
+        .filter(|line| {
+            !line.trim().is_empty()
+                && !line.starts_with("Suggestions for ")
+                && !is_omikuji_log(line)
+        })
         .map(|line| {
             let parts: Vec<_> = line.split('\t').collect();
             anyhow::ensure!(
@@ -213,6 +246,23 @@ mod tests {
         let files = input_files(&[dir.path().display().to_string(), file.display().to_string()])?;
         assert_eq!(files, vec![file.canonicalize()?]);
         assert!(export(&dir.path().join("ausente/out.json"), &[]).is_err());
+        Ok(())
+    }
+    #[test]
+    fn native_omikuji_logs_do_not_hide_invalid_suggestions() -> Result<()> {
+        let log = "2026-10-23T18:51:33.499Z INFO  [omikuji::model] Loading model from C:\\ação...";
+        let rows = parse_suggestions(&format!("{log}\n<https://ex/1>\tComputação\t0.95\n"))?;
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].label, "Computação");
+        assert!(parse_suggestions(&format!("{log}\n<https://ex/1>\tbroken\tNaN")).is_err());
+        assert!(parse_suggestions(&log.replace("omikuji::model", "unknown::model")).is_err());
+        assert!(
+            parse_suggestions(&log.replace("2026-10-23T18:51:33.499Z", "not-a-timestamp")).is_err()
+        );
+        assert_eq!(
+            parse_suggestions(&format!("<https://ex/1>\t{log}\t0.5"))?[0].label,
+            log
+        );
         Ok(())
     }
 }

@@ -10,6 +10,7 @@ import struct
 import subprocess
 import sys
 import tempfile
+import tomllib
 import urllib.request
 import zipfile
 
@@ -149,6 +150,7 @@ def build(args):
                     shutil.copy2(path, target)
         verification = verify(package, cache, args.wine)
         manifest = {
+            "application_version": tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))["package"]["version"],
             "artifact_kind": "runtime_only" if args.runtime_only else "desktop_application",
             "python": python,
             "requirements_sha256": digest(lock),

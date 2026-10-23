@@ -56,6 +56,12 @@ Na pasta que contém `AnnifManager/`:
       indisponível; a aba Sugestões de descritores com vários documentos mostra contagem, barra e
       estimativa após o primeiro sucesso. Cancelados não contam como processados.
 
+- [ ] Versão 0.2.0: confirmar versão em Diagnóstico; criar projeto **Omikuji**,
+      carregar vocabulário, treinar, gerar descritores e exportar JSON/CSV.
+      Criar um Ensemble com Omikuji e outra fonte compatível já treinada.
+      Em dados descartáveis, cancelar treinamento Omikuji e repetir até sucesso.
+      Executar sem rede e registrar também o hash do ZIP desta versão.
+
 ## Resultado
 
 Guardar o JSON, hash do ZIP, capturas da UI e logs junto ao registro do ambiente.

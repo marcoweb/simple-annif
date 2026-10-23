@@ -7,8 +7,25 @@ vocabulários, treinamento, Suggest e exportações JSON/CSV. Consulte `README.m
 `packaging/GUIA-USO.md` para os fluxos e exemplos agora incluídos no ZIP.
 
 Artefato: `dist/AnnifManager-win64.zip`; SHA-256:
-`530717902e3e26ef7353078aeb0c92d820b543dac548b4f2f116c715e70c141e`.
+`fc6d2360759cc48749fe4491306200ab708aeef720d3ec3a91708a25b8a94bbc`.
 Relatório: `packaging/validation-windows.json`.
+Versão **0.2.0**, autorizada em 23/10: **Omikuji 0.5.2** incluído no runtime e
+no formulário; pode ser fonte de Ensemble. Padrões Parabel do Annif, parâmetros
+avançados no TOML. Mantidas as 62 versões Python anteriores; acrescentados
+Omikuji 0.5.2, milksnake 0.1.6, CFFI 2.1.1 e pycparser 3.12, com hashes e
+wheels Windows x64. A versão aparece em Diagnóstico e no manifesto.
+O logger nativo Omikuji escreve em stdout: o parser reconhece apenas linhas
+com timestamp/nível/módulo Omikuji e preserva a saída completa nos logs;
+resultados malformados continuam sendo rejeitados. Passaram 28 testes Rust,
+três Python, dez comandos CLI sem rede e três integrações reais (117,74 s).
+A amostra NALT passou com cancelamento após iniciar preparação, novo treino,
+cinco resultados e exportações JSON/CSV. UI nativa passou criação, cancelamento,
+novo treino e descritor esperado. Ver `packaging/validation-omikuji.json`.
+A atualização exige o pacote completo, não apenas o EXE. Runtime anterior e
+arquivos substituídos ficam em `D:/AnnifManager/backup-before-0.2.0`; workspace
+preservado. ZIP identificado: `dist/AnnifManager-0.2.0-win64.zip` (mesmo conteúdo
+do ZIP padrão). Ainda falta validar esta versão em Windows limpo; testes
+anteriores de outras máquinas não abrangem Omikuji.
 Terminologia aprovada em 23/10: aba e título **Sugestões de descritores**,
 botão **Sugerir descritores** e coluna **Descritor**. Ajuda e guias acompanham
 os novos nomes. Referências históricas a Suggest neste arquivo e nos relatórios
@@ -40,7 +57,7 @@ Corrigido também WinError 183 ao repetir carga/treinamento: o ponto de entrada
 no Windows, sem alterar o módulo os global ou os wheels fixados. A CLI continua
 sendo `from annif.cli import cli; cli()`. A integração real agora repete carga
 e treinamento dos dois backends. Ver `packaging/validation-cancellation.json`.
-Omikuji ainda não foi incluído.
+Omikuji foi incluído posteriormente na versão 0.2.0, conforme descrito acima.
 Adição solicitada pelo usuário: Suggest → Exportar para Evametrics (CSV),
 conforme `marcoweb/evametrics` revisão `9b2b9dc3d8d28bb53722ad9de63349d33598077b`.
 Contrato `ID;Titulo;Descriptores`: nomes dos arquivos fornecem os IDs com prefixo
@@ -75,7 +92,7 @@ Passou `real_nalt_corpus_with_bundled_annif`: TF-IDF e MLLM treinados; cinco
 documentos em cada um dos três backends, 15 resultados JSON. Duração total
 379,97 s; ver `packaging/validation-corpus-nalt.json`. O teste é funcional,
 pelos serviços com runtime incorporado; não mede qualidade nem valida a UI.
-Passaram fmt/check/Clippy, 26 testes Rust e três testes Python. O teste Rust
+Passaram fmt/check/Clippy, 28 testes Rust e três testes Python. O teste Rust
 ignorado por padrão `existing_workflows_with_bundled_annif` foi executado
 separadamente com `ANNIF_TEST_PACKAGE` e passou. Ele usa workspace temporário;
 não testar operações destrutivas sobre dados do usuário.
@@ -88,9 +105,9 @@ pela UI nativa na máquina de build; ver `packaging/validation-ui-windows.json`.
 Campos de texto aceitam SetValue da acessibilidade Windows e respeitam o estado
 desabilitado, coberto por teste egui. A troca de workspace, a rejeição de destino
 em runtime e a abertura release sem runtime também passaram pela UI.
-Executável atual: SHA-256 `2e235cb323542828d9f9e979ad11a3db86519284d4aa188e80f50cfc24722d50`.
+Executável atual: SHA-256 `4cadebb190ce5ef4e5d92f38cbe04e7a1680ebc9d241e6162c0f11271b4de315`.
 Instalação em D:/AnnifManager atualizada com backup
-`AnnifManager.before-descritores.exe`; dados preservados.
+`backup-before-0.2.0/`; dados preservados, runtime também atualizado.
 O usuário pediu versionamento contínuo: fazer commits locais dos marcos
 validados, sem incluir artefatos, corpora ou dados do workspace. Primeiro marco
 registrado em `9280bd8`; não fazer push sem solicitação.
@@ -140,7 +157,7 @@ de build do desenvolvedor não são requisitos da máquina de destino.
 - Usar caminhos e argumentos separados, sem shell ou concatenação manual de comandos.
 - Preservar suporte a espaços, Unicode e diferenças entre Linux e Windows.
 - Dados modificáveis ficam no workspace, fora de `runtime/`.
-- Priorizar TF-IDF, MLLM e Ensemble; não acrescentar extras pesados nesta etapa.
+- Suportar TF-IDF, MLLM, Omikuji e Ensemble; não acrescentar outros extras pesados sem solicitação.
 - Fazer alterações incrementais e manter o projeto compilável. Evitar novas
   dependências, grandes refatorações e funcionalidades fora do teste em andamento.
 
@@ -197,7 +214,7 @@ runtime instalado, workspace com dados do usuário ou arquivos de credenciais.
   `packaging/python-win64.json`.
 - Annif: **1.4.2**.
 - NumPy: **2.2.6**; scikit-learn: **1.7.2**.
-- As 62 dependências estão fixadas com hashes em `packaging/requirements-win64.lock`.
+- As 66 dependências estão fixadas com hashes em `packaging/requirements-win64.lock`.
 - Dados NLTK `punkt_tab` e `stopwords` têm hashes em `packaging/nltk-data.json`.
 
 Foi gerado no Fedora:

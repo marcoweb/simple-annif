@@ -38,6 +38,13 @@
       "status": "passed"
     },
     {
+      "command": "train",
+      "arguments": [
+        "smoke-omikuji"
+      ],
+      "status": "passed"
+    },
+    {
       "command": "suggest",
       "arguments": [
         "smoke-tfidf"
@@ -48,6 +55,13 @@
       "command": "suggest",
       "arguments": [
         "smoke-mllm"
+      ],
+      "status": "passed"
+    },
+    {
+      "command": "suggest",
+      "arguments": [
+        "smoke-omikuji"
       ],
       "status": "passed"
     },
@@ -79,10 +93,10 @@
     "cargo_check_locked": "passed",
     "cargo_clippy_all_targets_deny_warnings": "passed",
     "cargo_test_locked": {
-      "passed": 26,
+      "passed": 28,
       "failed": 0,
-      "ignored": 4,
-      "ignored_reason": "4 opt-in runtime tests; not rerun for terminology-only change; build verification and native example suggestion passed"
+      "ignored": 5,
+      "ignored_reason": "5 opt-in tests; 3 separately passed including Omikuji NALT; RDF and legacy full-backend NALT test not repeated"
     },
     "packaging_unittest": {
       "passed": 3,
@@ -91,7 +105,7 @@
     "release_build_locked": "passed",
     "real_runtime_integration": {
       "status": "passed",
-      "command": "cargo test --locked existing_workflows_with_bundled_annif -- --ignored --nocapture",
+      "command": "cargo test --locked with_bundled_annif -- --ignored --nocapture --skip real_nalt_corpus_with_bundled_annif --test-threads=1",
       "scope": [
         "project configuration and real backend/name listing",
         "TSV vocabulary with language",
@@ -101,16 +115,20 @@
         "JSON export including explicit failure",
         "workspace change and runtime rejection",
         "repeat vocabulary load on Windows",
-        "retrain TF-IDF and MLLM on Windows"
+        "retrain TF-IDF and MLLM on Windows",
+        "repeat Omikuji training",
+        "Ensemble with Omikuji",
+        "Omikuji form in all languages",
+        "NALT Omikuji cancellation, retry and 5 suggestions"
       ],
       "network": "not blocked in Rust integration; blocked separately in packaged verify_runtime.py"
     }
   },
   "runtime_only": false,
-  "artifact": "dist/AnnifManager-win64.zip",
-  "artifact_size_bytes": 171722312,
-  "artifact_sha256": "530717902e3e26ef7353078aeb0c92d820b543dac548b4f2f116c715e70c141e",
-  "artifact_hash_check": "passed_independent_hashlib_matches_sidecar",
+  "artifact": "dist/AnnifManager-0.2.0-win64.zip",
+  "artifact_size_bytes": 172390229,
+  "artifact_sha256": "fc6d2360759cc48749fe4491306200ab708aeef720d3ec3a91708a25b8a94bbc",
+  "artifact_hash_check": "passed_independent_hashlib_matches_sidecar_and_latest_alias",
   "pe_inspection": {
     "tool": "dumpbin 14.50.35726.0",
     "machine": "x64",
@@ -121,8 +139,8 @@
   "extracted_zip_cli_test": "not repeated for current artifact; build-time verification passed all 8 commands",
   "relocation_test": "passed on earlier artifact; not repeated for cancellation or progress indicators",
   "native_windows_test": "CLI and main GUI workflows passed on build machine",
-  "clean_windows_test": "Earlier package: CLI passed and general GUI operation reported by user on another machine without Python; cancellation and progress indicators pending there",
-  "desktop_application_test": "Current release: renamed tab/button/result column and example suggestion passed via Windows UIAutomation in isolated workspace; previous full workflows retained in detailed reports",
+  "clean_windows_test": "Omikuji 0.2.0 not yet tested on a clean machine; earlier external report predates Omikuji",
+  "desktop_application_test": "Omikuji native creation, cancellation/retry and suggestions passed; details in validation-omikuji.json",
   "ui_flows_test": {
     "project_editor_and_listing": "passed_using_Windows_UIAutomation_on_intermediate_release",
     "all_tabs_light_background": "passed_headless_egui_regression_test",
@@ -181,7 +199,9 @@
     "projects-nalt.toml",
     "vocabulario.tsv",
     "treinamento.tsv",
-    "documento.txt"
+    "documento.txt",
+    "projects-omikuji.toml",
+    "projects-nalt-omikuji.toml"
   ],
   "nalt_vocabulary_validation": {
     "status": "passed",
@@ -204,10 +224,10 @@
   },
   "local_installation_update": {
     "path": "D:/AnnifManager/AnnifManager.exe",
-    "backup": "D:/AnnifManager/AnnifManager.before-descritores.exe",
-    "sha256": "2e235cb323542828d9f9e979ad11a3db86519284d4aa188e80f50cfc24722d50",
-    "scope": "executable only; runtime and workspace preserved",
-    "hash_check": "passed"
+    "backup": "D:/AnnifManager/backup-before-0.2.0",
+    "sha256": "4cadebb190ce5ef4e5d92f38cbe04e7a1680ebc9d241e6162c0f11271b4de315",
+    "scope": "full package including runtime; workspace preserved",
+    "hash_check": "passed; all staged files verified"
   },
   "vocabulary_selection": {
     "status": "passed",
@@ -264,5 +284,11 @@
     "native_ui": "passed: renamed tab selected, action invoked, Computação result and Descritor column present, 1/1 processed without failures",
     "native_test_workspace": "target/Validacao UI completa/AnnifManager/workspace",
     "clean_windows": "not repeated for this release"
-  }
+  },
+  "previous_omikuji_artifact_sha256": "530717902e3e26ef7353078aeb0c92d820b543dac548b4f2f116c715e70c141e",
+  "omikuji": {
+    "status": "passed_on_build_machine",
+    "report": "packaging/validation-omikuji.json"
+  },
+  "application_version": "0.2.0"
 }

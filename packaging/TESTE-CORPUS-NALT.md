@@ -47,6 +47,16 @@ URIs NALT, scores finitos e exportação JSON dos 15 resultados.
 
 ## Repetir pela interface
 
+Para testar Omikuji 0.2.0 com a mesma amostra e as variáveis acima:
+
+```powershell
+cargo test --locked omikuji_nalt_with_bundled_annif -- --ignored --nocapture
+```
+
+Esse teste cria um projeto Omikuji em workspace temporário, cancela o primeiro
+treinamento após iniciar a preparação, treina novamente e gera descritores para
+os cinco textos reservados. Verifica URIs, scores e exportações. Não mede qualidade.
+
 Em uma cópia de teste do pacote, use `examples/projects-nalt.toml`, carregue
 o RDF com ID `nalt` e selecione a pasta `train` no treinamento de cada modelo.
 Selecione `test` em Sugestões de descritores para cada um dos três projetos e exporte os JSONs.
