@@ -1,5 +1,6 @@
 pub mod diagnostics;
 pub mod processing;
+mod progress;
 pub mod project_form;
 pub mod projects;
 pub mod training;

@@ -6,14 +6,17 @@ use crate::services::{
 use eframe::egui;
 use rfd::FileDialog;
 use std::sync::mpsc::{self, Receiver, TryRecvError};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 enum Event {
-    Result(DocumentResult),
+    Prepared(usize),
+    Result(DocumentResult, Instant),
     Error(String),
 }
 #[derive(Default)]
 pub struct ProcessingUi {
+    timer: Option<super::progress::ActivityTimer>,
+    progress: super::progress::BatchProgress,
     cancellation: Cancellation,
     paths_to_process: Vec<String>,
     receiver: Option<Receiver<Event>>,
@@ -40,7 +43,11 @@ impl ProcessingUi {
         if let Some(rx) = &self.receiver {
             loop {
                 match rx.try_recv() {
-                    Ok(Event::Result(result)) => self.results.push(result),
+                    Ok(Event::Prepared(total)) => self.progress.total = Some(total),
+                    Ok(Event::Result(result, finished)) => {
+                        self.progress.record(&result, finished);
+                        self.results.push(result);
+                    }
                     Ok(Event::Error(error)) => self.status = Some(error),
                     Err(TryRecvError::Empty) => break,
                     Err(TryRecvError::Disconnected) => {
@@ -117,12 +124,13 @@ impl ProcessingUi {
         if self.is_busy() {
             super::cancel_button(ui, &self.cancellation);
             ui.spinner();
-            ui.label(format!(
-                "Processando… {} documento(s) concluído(s)",
-                self.results.len()
-            ));
             ui.ctx().request_repaint_after(Duration::from_millis(100));
         }
+        if let Some(timer) = &self.timer {
+            timer.show(ui);
+        }
+        self.progress
+            .show(ui, self.is_busy(), self.cancellation.is_requested());
         if !self.results.is_empty()
             && ui
                 .add_enabled(
@@ -218,6 +226,9 @@ impl ProcessingUi {
             });
     }
     fn start(&mut self, project_id: String, runtime: ApplicationRuntime) {
+        let timer = super::progress::ActivityTimer::start();
+        self.timer = Some(timer.clone());
+        self.progress = super::progress::BatchProgress::default();
         let (tx, rx) = mpsc::channel();
         let paths = self.paths_to_process.clone();
         self.status = None;
@@ -227,22 +238,31 @@ impl ProcessingUi {
         let runtime = runtime.with_cancellation(cancellation.clone());
         match std::thread::Builder::new()
             .name("annif-suggest".into())
-            .spawn(move || match processing::input_files(&paths) {
-                Ok(files) => {
-                    processing::suggest_batch(
-                        &runtime,
-                        &project_id,
-                        &files,
-                        &cancellation,
-                        |result| tx.send(Event::Result(result)).is_ok(),
-                    );
+            .spawn(move || {
+                match processing::input_files(&paths) {
+                    Ok(files) => {
+                        let _ = tx.send(Event::Prepared(files.len()));
+                        processing::suggest_batch(
+                            &runtime,
+                            &project_id,
+                            &files,
+                            &cancellation,
+                            |result| tx.send(Event::Result(result, Instant::now())).is_ok(),
+                        );
+                    }
+                    Err(error) => {
+                        let _ = tx.send(Event::Error(format!("{error:#}")));
+                    }
                 }
-                Err(error) => {
-                    let _ = tx.send(Event::Error(format!("{error:#}")));
-                }
+                timer.finish();
             }) {
             Ok(_) => self.receiver = Some(rx),
-            Err(error) => self.status = Some(format!("Não foi possível iniciar: {error}")),
+            Err(error) => {
+                if let Some(timer) = &self.timer {
+                    timer.finish();
+                }
+                self.status = Some(format!("Não foi possível iniciar: {error}"));
+            }
         }
     }
 }

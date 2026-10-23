@@ -79,10 +79,10 @@
     "cargo_check_locked": "passed",
     "cargo_clippy_all_targets_deny_warnings": "passed",
     "cargo_test_locked": {
-      "passed": 24,
+      "passed": 26,
       "failed": 0,
       "ignored": 4,
-      "ignored_reason": "4 opt-in runtime tests; existing_workflows_with_bundled_annif repeated separately with reload/retrain coverage"
+      "ignored_reason": "4 opt-in runtime tests; existing_workflows_with_bundled_annif passed in previous cancellation milestone, not rerun for UI-only timing change"
     },
     "packaging_unittest": {
       "passed": 3,
@@ -108,8 +108,8 @@
   },
   "runtime_only": false,
   "artifact": "dist/AnnifManager-win64.zip",
-  "artifact_size_bytes": 171713519,
-  "artifact_sha256": "ba07824d3a40c7cc9a923ef700f0a13913fd299125d9a8bc5ff6e826b40cf4e1",
+  "artifact_size_bytes": 171722201,
+  "artifact_sha256": "47140c4305676c97ac1c8c2ba6c1c0166d56a6ee6e4c0cb00a90d500f9333a29",
   "artifact_hash_check": "passed_independent_Get-FileHash_matches_sidecar",
   "pe_inspection": {
     "tool": "dumpbin 14.50.35726.0",
@@ -119,17 +119,17 @@
     "scope": "Rust executable only; Python extension DLL dependencies and clean-machine loading remain unverified"
   },
   "extracted_zip_cli_test": "not repeated for current artifact; build-time verification passed all 8 commands",
-  "relocation_test": "passed on earlier artifact; not repeated for cancellation change",
+  "relocation_test": "passed on earlier artifact; not repeated for cancellation or progress indicators",
   "native_windows_test": "CLI and main GUI workflows passed on build machine",
-  "clean_windows_test": "Earlier package: CLI passed and general GUI operation reported by user on another machine without Python; current cancellation feature pending there",
-  "desktop_application_test": "Current release cancellation/retry and partial export passed on build machine; earlier main-flow evidence retained in validation-ui-windows.json",
+  "clean_windows_test": "Earlier package: CLI passed and general GUI operation reported by user on another machine without Python; cancellation and progress indicators pending there",
+  "desktop_application_test": "Elapsed clocks and Suggest ETA/cancel/retry/hidden-tab completion passed on build machine; executable scope in validation-progress-time.json",
   "ui_flows_test": {
     "project_editor_and_listing": "passed_using_Windows_UIAutomation_on_intermediate_release",
     "all_tabs_light_background": "passed_headless_egui_regression_test",
     "vocabulary_training_suggest_export_native_ui": "passed on build machine; detailed executable coverage in validation-ui-windows.json",
     "final_screenshot": "target/funcional-final.png"
   },
-  "damaged_release_package_ui_test": "passed on earlier release; not repeated for cancellation change",
+  "damaged_release_package_ui_test": "passed on earlier release; not repeated for cancellation or progress indicators",
   "portable_validation_complete": false,
   "pending_checklist": "packaging/TESTE-WINDOWS-LIMPO.md",
   "previous_artifact": {
@@ -173,7 +173,8 @@
     "Clean Windows validation pending",
     "No timeout; cancellation limited to training, vocabulary load and Suggest",
     "Workspace preference lasts for current session only",
-    "Full NALT corpus training and accuracy not evaluated; functional sample passed"
+    "Full NALT corpus training and accuracy not evaluated; functional sample passed",
+    "Remaining-time estimate only for Suggest batches after a successful document; training/vocabulary load expose elapsed time and log stages only"
   ],
   "bundled_examples": [
     "projects.toml",
@@ -203,8 +204,8 @@
   },
   "local_installation_update": {
     "path": "D:/AnnifManager/AnnifManager.exe",
-    "backup": "D:/AnnifManager/AnnifManager.before-cancellation.exe",
-    "sha256": "e481b155e885a6a37f644dc82a3ac3ada2b0f6126aa4c979f485409a4ff9a44a",
+    "backup": "D:/AnnifManager/AnnifManager.before-progress-time.exe",
+    "sha256": "eba3241c902d6f8718e71518a91084c6630c7140502b006a0358dbc2b07f3878",
     "scope": "executable only; runtime and workspace preserved",
     "hash_check": "passed"
   },
@@ -248,5 +249,10 @@
   "secondary_windows": {
     "status": "partial_validation_reported_by_user",
     "report": "packaging/validation-secondary-windows.json"
+  },
+  "previous_progress_time_artifact_sha256": "ba07824d3a40c7cc9a923ef700f0a13913fd299125d9a8bc5ff6e826b40cf4e1",
+  "progress_time": {
+    "status": "passed",
+    "report": "packaging/validation-progress-time.json"
   }
 }

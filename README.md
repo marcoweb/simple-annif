@@ -111,7 +111,13 @@ Veja [o relatório da interface](packaging/validation-ui-windows.json).
 
 O **ZIP completo Windows x64** foi compilado em release em 22 de outubro de
 2026, com Python 3.13.16, Annif 1.4.2, dependências e dados linguísticos.
-Formatação, check, Clippy, 24 testes Rust e três testes Python passaram.
+Treinamento, carga e Suggest mostram tempo decorrido. Suggest em lote também
+exibe progresso por documento e tempo restante estimado pela média dos sucessos
+da execução. Treinamento/carga mostram etapas, com tempo restante indisponível
+porque o Annif não fornece progresso total. Consulte o
+[guia de uso](packaging/GUIA-USO.md#acompanhar-o-tempo-e-o-progresso).
+
+Formatação, check, Clippy, 26 testes Rust e três testes Python passaram.
 Cancelamento de processos e recuperação estão registrados em
 [validation-cancellation.json](packaging/validation-cancellation.json).
 Corrigida também a substituição de arquivos do Annif no Windows ao repetir

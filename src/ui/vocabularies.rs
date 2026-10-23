@@ -6,6 +6,8 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 pub struct VocabulariesUi {
+    timer: Option<super::progress::ActivityTimer>,
+    phase: &'static str,
     cancellation: Cancellation,
     vocab_id: String,
     vocab_path: String,
@@ -23,6 +25,8 @@ pub struct VocabulariesUi {
 impl Default for VocabulariesUi {
     fn default() -> Self {
         Self {
+            timer: None,
+            phase: "Preparando operação",
             cancellation: Cancellation::default(),
             vocab_id: "".to_string(),
             vocab_path: "".to_string(),
@@ -82,6 +86,9 @@ impl VocabulariesUi {
         }
         if let Some(rx) = &self.log_receiver {
             while let Ok(log) = rx.try_recv() {
+                if let Some(phase) = super::progress::phase_from_log(&log) {
+                    self.phase = phase;
+                }
                 self.logs.lock().unwrap().push(log);
             }
         }
@@ -158,6 +165,7 @@ impl VocabulariesUi {
         ui.add_space(20.0);
 
         if is_loading {
+            super::progress::show_indeterminate(ui, self.phase, self.cancellation.is_requested());
             super::cancel_button(ui, &self.cancellation);
             ui.small("Interromper pode deixar o vocabulário incompleto. Carregue o arquivo novamente antes de usar os projetos.");
             ui.ctx()
@@ -168,6 +176,9 @@ impl VocabulariesUi {
             });
         }
 
+        if let Some(timer) = &self.timer {
+            timer.show(ui);
+        }
         ui.heading("Logs");
         egui::ScrollArea::vertical()
             .max_height(200.0)
@@ -222,6 +233,9 @@ impl VocabulariesUi {
     }
 
     fn load_vocab(&mut self, runtime: &ApplicationRuntime) {
+        let timer = super::progress::ActivityTimer::start();
+        self.timer = Some(timer.clone());
+        self.phase = "Preparando operação";
         *self.is_loading.lock().unwrap() = true;
         self.logs.lock().unwrap().clear();
         *self.result.lock().unwrap() = None;
@@ -256,6 +270,7 @@ impl VocabulariesUi {
                     *result_clone.lock().unwrap() = Some(Err(format!("{e:#}")));
                 }
             }
+            timer.finish();
             *is_loading_clone.lock().unwrap() = false;
         });
     }

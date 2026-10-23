@@ -7,8 +7,17 @@ vocabulários, treinamento, Suggest e exportações JSON/CSV. Consulte `README.m
 `packaging/GUIA-USO.md` para os fluxos e exemplos agora incluídos no ZIP.
 
 Artefato: `dist/AnnifManager-win64.zip`; SHA-256:
-`ba07824d3a40c7cc9a923ef700f0a13913fd299125d9a8bc5ff6e826b40cf4e1`.
+`47140c4305676c97ac1c8c2ba6c1c0166d56a6ee6e4c0cb00a90d500f9333a29`.
 Relatório: `packaging/validation-windows.json`.
+Adição solicitada: tempo decorrido em Treinamento, carga e Suggest. O worker
+encerra o cronômetro mesmo com a aba oculta. Suggest mostra total, processados,
+falhas, cancelados e barra; estima o restante pela média dos documentos
+bem-sucedidos da execução. Antes do primeiro sucesso aguarda amostra; se o
+documento atual exceder a média, mostra recalculando. Não exibir ETA durante
+cancelamento ou após conclusão. Treinamento/carga mostram etapas conhecidas
+dos logs Annif 1.4.2 e restante indisponível: não há percentual global confiável.
+Sem histórico persistente ou dependências novas. Ver `src/ui/progress.rs`,
+guia de uso e `packaging/validation-progress-time.json`.
 Adição solicitada antes do Omikuji: **Cancelar processamento** em Treinamento,
 carga de Vocabulários e Suggest. Token por operação; a UI só libera ações após
 o término do worker. Windows usa Job Object com processo criado suspenso,
@@ -58,7 +67,7 @@ Passou `real_nalt_corpus_with_bundled_annif`: TF-IDF e MLLM treinados; cinco
 documentos em cada um dos três backends, 15 resultados JSON. Duração total
 379,97 s; ver `packaging/validation-corpus-nalt.json`. O teste é funcional,
 pelos serviços com runtime incorporado; não mede qualidade nem valida a UI.
-Passaram fmt/check/Clippy, 24 testes Rust e três testes Python. O teste Rust
+Passaram fmt/check/Clippy, 26 testes Rust e três testes Python. O teste Rust
 ignorado por padrão `existing_workflows_with_bundled_annif` foi executado
 separadamente com `ANNIF_TEST_PACKAGE` e passou. Ele usa workspace temporário;
 não testar operações destrutivas sobre dados do usuário.
@@ -71,9 +80,9 @@ pela UI nativa na máquina de build; ver `packaging/validation-ui-windows.json`.
 Campos de texto aceitam SetValue da acessibilidade Windows e respeitam o estado
 desabilitado, coberto por teste egui. A troca de workspace, a rejeição de destino
 em runtime e a abertura release sem runtime também passaram pela UI.
-Executável atual: SHA-256 `e481b155e885a6a37f644dc82a3ac3ada2b0f6126aa4c979f485409a4ff9a44a`.
+Executável atual: SHA-256 `eba3241c902d6f8718e71518a91084c6630c7140502b006a0358dbc2b07f3878`.
 Instalação em D:/AnnifManager atualizada com backup
-`AnnifManager.before-cancellation.exe`; dados preservados.
+`AnnifManager.before-progress-time.exe`; dados preservados.
 O usuário pediu versionamento contínuo: fazer commits locais dos marcos
 validados, sem incluir artefatos, corpora ou dados do workspace. Primeiro marco
 registrado em `9280bd8`; não fazer push sem solicitação.

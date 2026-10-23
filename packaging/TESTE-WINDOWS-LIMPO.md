@@ -50,6 +50,12 @@ Na pasta que contém `AnnifManager/`:
       Iniciar outra execução e confirmar conclusão normal. Trocar de aba durante
       o encerramento e verificar que a aplicação continua responsiva.
 
+- [ ] Conferir tempo decorrido em carga, treinamento e Suggest, inclusive após
+      trocar de aba. O valor deve parar ao terminar, falhar ou cancelar e zerar
+      na próxima execução. Carga/treinamento mostram etapa e tempo restante
+      indisponível; Suggest com vários documentos mostra contagem, barra e
+      estimativa após o primeiro sucesso. Cancelados não contam como processados.
+
 ## Resultado
 
 Guardar o JSON, hash do ZIP, capturas da UI e logs junto ao registro do ambiente.

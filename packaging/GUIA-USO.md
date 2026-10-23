@@ -106,6 +106,24 @@ existente. Após salvar, atualize a lista antes de treinar ou solicitar sugestõ
 Mensagens de erro incluem o retorno do Annif. Uma saída em stderr sozinha não
 significa falha; a execução precisa terminar com código zero. Ainda não há timeout.
 
+### Acompanhar o tempo e o progresso
+
+Treinamento, carga de vocabulário e Suggest mostram o **tempo decorrido**.
+O cronômetro continua ao trocar de aba e para ao concluir, falhar ou cancelar;
+uma nova execução começa do zero.
+
+Em **Suggest**, a barra mostra os documentos processados e o total do lote,
+com contadores separados para falhas e cancelamentos. Depois do primeiro
+documento concluído com sucesso, aparece o **tempo restante estimado**, calculado
+pela média dos documentos bem-sucedidos desta execução. Textos de tamanhos
+diferentes podem alterar bastante essa previsão. Quando o documento atual
+excede a média, a interface informa que está recalculando. Não há estimativa
+durante o cancelamento nem depois de encerrar a operação.
+
+Treinamento e carga de vocabulário mostram a etapa informada pelo Annif.
+Como essas operações não informam progresso total, o tempo restante aparece
+como indisponível. Não há previsão baseada em execuções anteriores.
+
 ### Cancelar uma operação
 
 Durante **Treinamento**, **Carregar Vocabulário** ou **Suggest**, clique em

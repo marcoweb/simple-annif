@@ -5,6 +5,8 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 pub struct TrainingUi {
+    timer: Option<super::progress::ActivityTimer>,
+    phase: &'static str,
     cancellation: Cancellation,
     result_project: Option<String>,
     data_path: String,
@@ -17,6 +19,8 @@ pub struct TrainingUi {
 impl Default for TrainingUi {
     fn default() -> Self {
         Self {
+            timer: None,
+            phase: "Preparando operação",
             cancellation: Cancellation::default(),
             result_project: None,
             data_path: "".to_string(),
@@ -32,6 +36,9 @@ impl TrainingUi {
     pub fn poll_results(&mut self) {
         if let Some(rx) = &self.log_receiver {
             while let Ok(log) = rx.try_recv() {
+                if let Some(phase) = super::progress::phase_from_log(&log) {
+                    self.phase = phase;
+                }
                 self.logs.lock().unwrap().push(log);
             }
         }
@@ -103,6 +110,7 @@ impl TrainingUi {
         ui.add_space(20.0);
 
         if is_training {
+            super::progress::show_indeterminate(ui, self.phase, self.cancellation.is_requested());
             super::cancel_button(ui, &self.cancellation);
             ui.small("Interromper pode deixar o modelo incompleto. Execute o treinamento novamente antes de usar Suggest.");
             ui.ctx()
@@ -113,6 +121,9 @@ impl TrainingUi {
             });
         }
 
+        if let Some(timer) = &self.timer {
+            timer.show(ui);
+        }
         if let Some(project) = &self.result_project {
             ui.label(format!("Logs e resultado do projeto: {project}"));
         }
@@ -154,6 +165,9 @@ impl TrainingUi {
     }
 
     fn start_training(&mut self, project_id: &str, runtime: &ApplicationRuntime) {
+        let timer = super::progress::ActivityTimer::start();
+        self.timer = Some(timer.clone());
+        self.phase = "Preparando operação";
         self.result_project = Some(project_id.to_owned());
         *self.is_training.lock().unwrap() = true;
         self.logs.lock().unwrap().clear();
@@ -182,6 +196,7 @@ impl TrainingUi {
                     *result_clone.lock().unwrap() = Some(Err(format!("{e:#}")));
                 }
             }
+            timer.finish();
             *is_training_clone.lock().unwrap() = false;
         });
     }

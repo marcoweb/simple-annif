@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-22",
+  "environment": "native_windows_build_machine",
+  "scope": ["training", "vocabulary_load", "suggest_batch"],
+  "implementation": {
+    "elapsed": "monotonic per-operation clock; worker freezes completion time even when tab is hidden; fresh operation resets clock",
+    "suggest_eta": "mean subprocess duration of successful documents in current batch; excludes failed and cancelled documents; subtracts time spent on current document",
+    "estimate_limits": "waits for first success; shows recalculating when current document exceeds mean; hidden during cancellation and after completion; no persisted history",
+    "training_and_vocabulary": "known Annif 1.4.2 log stages, including Backend <id>: prefix; remaining time explicitly unavailable because no global progress is exposed",
+    "dependencies": "unchanged"
+  },
+  "checks": {
+    "cargo_fmt": "passed",
+    "cargo_check_locked": "passed",
+    "cargo_clippy_all_targets_deny_warnings": "passed",
+    "cargo_test_locked": {"passed": 26, "failed": 0, "ignored": 4},
+    "progress_unit_tests": "first-sample wait, successful-sample mean, failure exclusion, overdue recalculation, cancelled counts, completion, worker clock freeze/reset, known/unknown log stages and backend prefix",
+    "packaging_unittest": {"passed": 3, "failed": 0},
+    "portable_runtime": "8 commands passed; Python CLI network blocked; pinned runtime unchanged",
+    "native_ui": {
+      "tool": "Windows UIAutomation",
+      "package": "target/Validacao UI completa/AnnifManager",
+      "initial_executable_sha256": "81658d9a61f40cf6c77663cf79b7b1d9266a88e222b6d231d3ba1fa67e01ea68",
+      "initial_release": "vocabulary elapsed advances, stops after cancellation, resets on successful reload; training timer freezes after completion with Diagnostics selected; Suggest ETA/cancel/retry and hidden-tab completion passed",
+      "final_release": "Suggest first-success ETA, 1/3 processed plus 2 cancelled, stopped clock, retry reset, 3/3 completion with tab hidden and no stale ETA passed",
+      "phase_scope": "native initial/preparing phase and unavailable-ETA text observed; later Annif stage transitions covered by log parser unit test, not timed native assertions",
+      "automation_notes": "one final-release attempt was interrupted when the test window closed; no AnnifManager Application error event was found; fresh instance completed the test",
+      "isolation": "discardable test workspace; no operations run on user models"
+    }
+  },
+  "artifact": {
+    "path": "dist/AnnifManager-win64.zip",
+    "size_bytes": 171722201,
+    "sha256": "47140c4305676c97ac1c8c2ba6c1c0166d56a6ee6e4c0cb00a90d500f9333a29",
+    "hash_check": "independent Get-FileHash matches sidecar",
+    "executable_sha256": "eba3241c902d6f8718e71518a91084c6630c7140502b006a0358dbc2b07f3878"
+  },
+  "clean_windows": "new indicators not tested on a clean machine; previous user report predates cancellation and progress indicators",
+  "portable_validation_complete": false
+}
