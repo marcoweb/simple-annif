@@ -1,14 +1,22 @@
 # Annif Manager — instruções para retomar no Windows
 
-Estado atualizado em 22 de outubro de 2026. O escopo confirmado pelo usuário é
+Estado atualizado em 23 de outubro de 2026. O escopo confirmado pelo usuário é
 concluir as funcionalidades atuais, sem adicionar histórico, avaliações ou SQLite.
 O pacote completo Windows x64 foi reconstruído com correções de projetos,
 vocabulários, treinamento, Suggest e exportações JSON/CSV. Consulte `README.md` e
 `packaging/GUIA-USO.md` para os fluxos e exemplos agora incluídos no ZIP.
 
 Artefato: `dist/AnnifManager-win64.zip`; SHA-256:
-`47140c4305676c97ac1c8c2ba6c1c0166d56a6ee6e4c0cb00a90d500f9333a29`.
+`530717902e3e26ef7353078aeb0c92d820b543dac548b4f2f116c715e70c141e`.
 Relatório: `packaging/validation-windows.json`.
+Terminologia aprovada em 23/10: aba e título **Sugestões de descritores**,
+botão **Sugerir descritores** e coluna **Descritor**. Ajuda e guias acompanham
+os novos nomes. Referências históricas a Suggest neste arquivo e nos relatórios
+indicam a mesma funcionalidade; comando Annif `suggest`, APIs e campos de
+exportação continuam iguais. Passaram fmt/check/Clippy, 26 testes Rust, três
+testes Python, oito comandos do runtime e conferência nativa dos novos rótulos
+com uma sugestão de exemplo em workspace isolado. Evidência em
+`packaging/validation-windows.json` → `terminology`.
 Adição solicitada: tempo decorrido em Treinamento, carga e Suggest. O worker
 encerra o cronômetro mesmo com a aba oculta. Suggest mostra total, processados,
 falhas, cancelados e barra; estima o restante pela média dos documentos
@@ -80,9 +88,9 @@ pela UI nativa na máquina de build; ver `packaging/validation-ui-windows.json`.
 Campos de texto aceitam SetValue da acessibilidade Windows e respeitam o estado
 desabilitado, coberto por teste egui. A troca de workspace, a rejeição de destino
 em runtime e a abertura release sem runtime também passaram pela UI.
-Executável atual: SHA-256 `eba3241c902d6f8718e71518a91084c6630c7140502b006a0358dbc2b07f3878`.
+Executável atual: SHA-256 `2e235cb323542828d9f9e979ad11a3db86519284d4aa188e80f50cfc24722d50`.
 Instalação em D:/AnnifManager atualizada com backup
-`AnnifManager.before-progress-time.exe`; dados preservados.
+`AnnifManager.before-descritores.exe`; dados preservados.
 O usuário pediu versionamento contínuo: fazer commits locais dos marcos
 validados, sem incluir artefatos, corpora ou dados do workspace. Primeiro marco
 registrado em `9280bd8`; não fazer push sem solicitação.

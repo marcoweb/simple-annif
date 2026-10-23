@@ -23,7 +23,7 @@ python packaging/prepare_nalt_test_corpus.py
 O script baixa apenas dados do commit fixado e produz:
 
 - `target/corpus-validation/train/`: 100 pares UTF-8 `.txt`/`.key`.
-- `target/corpus-validation/test/`: cinco documentos reservados para Suggest.
+- `target/corpus-validation/test/`: cinco documentos reservados para Sugestões de descritores.
 - `target/corpus-validation/preparation.json`: procedência, hashes e termos excluídos.
 
 Os dados ficam em `target/`, fora do Git e do ZIP da aplicação. A preparação
@@ -42,14 +42,14 @@ $env:ANNIF_TEST_NALT_MODELS = (Resolve-Path 'target/nalt-input/workspace-final/m
 cargo test --locked real_nalt_corpus_with_bundled_annif -- --ignored --nocapture
 ```
 
-Valida TF-IDF e MLLM, Suggest dos dois modelos e Ensemble nos cinco textos,
+Valida TF-IDF e MLLM, Sugestões de descritores dos dois modelos e Ensemble nos cinco textos,
 URIs NALT, scores finitos e exportação JSON dos 15 resultados.
 
 ## Repetir pela interface
 
 Em uma cópia de teste do pacote, use `examples/projects-nalt.toml`, carregue
 o RDF com ID `nalt` e selecione a pasta `train` no treinamento de cada modelo.
-Selecione `test` em Suggest para cada um dos três projetos e exporte os JSONs.
+Selecione `test` em Sugestões de descritores para cada um dos três projetos e exporte os JSONs.
 Durante operações, troque de aba: ao terminar, as ações devem ser liberadas
 sem precisar voltar à aba de origem. Isso ainda exige validação nativa;
 o teste de serviços não substitui a interação com diálogos e controles.

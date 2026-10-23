@@ -17,7 +17,7 @@ pub fn render(results: &[DocumentResult]) -> Result<String> {
         );
         ensure!(
             !result.cancelled && result.error.is_none(),
-            "O documento {} falhou no Suggest. Corrija a falha e processe novamente, ou use JSON para preservar os erros.",
+            "O documento {} falhou na geração de sugestões. Corrija a falha e processe novamente, ou use JSON para preservar os erros.",
             result.path
         );
         ensure!(

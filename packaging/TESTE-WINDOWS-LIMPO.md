@@ -34,8 +34,8 @@ Na pasta que contém `AnnifManager/`:
       outro diretório de trabalho. Confirmar caminhos no novo local.
 - [ ] Colocar configurações TOML de teste em `workspace/projects/` e validar
       na UI IDs, nomes e backends da lista de projetos.
-- [ ] Pela UI, carregar vocabulário UTF-8, treinar TF-IDF e MLLM e executar
-      suggest nesses backends e no Ensemble. Usar nomes com espaços/acentos;
+- [ ] Pela UI, carregar vocabulário UTF-8, treinar TF-IDF e MLLM e sugerir
+      descritores nesses backends e no Ensemble. Usar nomes com espaços/acentos;
       conferir descritores, scores e logs. Registrar entradas e resultados.
 - [ ] Trocar o workspace em Diagnóstico por outro caminho absoluto: novos
       dados devem ir para ele. Confirmar rejeição de caminho dentro de `runtime/`.
@@ -45,15 +45,15 @@ Na pasta que contém `AnnifManager/`:
 - [ ] Em dados descartáveis, cancelar treinamento e carga de vocabulário:
       confirmar mensagem, logs preservados, ausência de processos Python do
       pacote em segundo plano e liberação das ações; repetir a operação até sucesso.
-- [ ] Cancelar um lote de Suggest: preservar resultados anteriores e indicar os
+- [ ] Cancelar um lote de Sugestões de descritores: preservar resultados anteriores e indicar os
       documentos cancelados/não processados no JSON; rejeitar CSV incompleto.
       Iniciar outra execução e confirmar conclusão normal. Trocar de aba durante
       o encerramento e verificar que a aplicação continua responsiva.
 
-- [ ] Conferir tempo decorrido em carga, treinamento e Suggest, inclusive após
+- [ ] Conferir tempo decorrido em carga, treinamento e Sugestões de descritores, inclusive após
       trocar de aba. O valor deve parar ao terminar, falhar ou cancelar e zerar
       na próxima execução. Carga/treinamento mostram etapa e tempo restante
-      indisponível; Suggest com vários documentos mostra contagem, barra e
+      indisponível; a aba Sugestões de descritores com vários documentos mostra contagem, barra e
       estimativa após o primeiro sucesso. Cancelados não contam como processados.
 
 ## Resultado

@@ -80,10 +80,10 @@ As operações já iniciadas conservam o workspace que tinham ao começar.
 
 Logs progressivos de treinamento e carga de vocabulário são capturados no
 resultado final, além de enviados à UI. Uma saída diferente de zero é tratada
-como falha nessas operações. Treinamento, carga de vocabulário e Suggest têm
+como falha nessas operações. Treinamento, carga de vocabulário e Sugestões de descritores têm
 **Cancelar processamento**, com preservação de logs. O cancelamento aguarda o
 encerramento do processo e seus auxiliares. Carga/treinamento interrompidos podem
-deixar arquivos parciais e devem ser refeitos antes de usar os projetos. Em Suggest,
+deixar arquivos parciais e devem ser refeitos antes de usar os projetos. Em Sugestões de descritores,
 o JSON mantém os resultados concluídos e registra documentos cancelados/não
 processados; CSV para Evametrics rejeita lotes incompletos. Ainda não há timeout.
 
@@ -96,8 +96,8 @@ Os fluxos existentes foram corrigidos e verificados com o Annif incorporado:
   de páginas HTML salvas como arquivos de vocabulário.
 - Treinamento: seleção de arquivo ou pasta, logs progressivos e orientação
   para Ensemble, que utiliza os modelos dos projetos fonte.
-- Suggest: seleção de arquivos ou pastas TXT, resultados por documento com
-  URI, assunto e score, falhas explícitas, exportação JSON estruturada e
+- Sugestões de descritores: seleção de arquivos ou pastas TXT, resultados por documento com
+  URI, descritor e score, falhas explícitas, exportação JSON estruturada e
   CSV para Evametrics (`ID;Titulo;Descriptores`). IDs vêm dos nomes dos arquivos
   e devem coincidir com o padrão-ouro; veja as restrições no guia de uso.
 - Troca de workspace: limpa seleções e resultados anteriores; operações
@@ -106,13 +106,13 @@ Os fluxos existentes foram corrigidos e verificados com o Annif incorporado:
 O pacote inclui `GUIA-USO.md` e `examples/` com dados didáticos e configuração
 NALT em inglês. Consulte o [guia](packaging/GUIA-USO.md) para executar o fluxo
 completo. Os fluxos principais passaram pela UI nativa na máquina de build:
-carga TSV/RDF, treinamento TF-IDF/MLLM, Suggest e exportação pelo diálogo Windows.
+carga TSV/RDF, treinamento TF-IDF/MLLM, Sugestões de descritores e exportação pelo diálogo Windows.
 Veja [o relatório da interface](packaging/validation-ui-windows.json).
 
-O **ZIP completo Windows x64** foi compilado em release em 22 de outubro de
+O **ZIP completo Windows x64** foi compilado em release em 23 de outubro de
 2026, com Python 3.13.16, Annif 1.4.2, dependências e dados linguísticos.
-Treinamento, carga e Suggest mostram tempo decorrido. Suggest em lote também
-exibe progresso por documento e tempo restante estimado pela média dos sucessos
+Treinamento, carga e Sugestões de descritores mostram tempo decorrido. A geração
+de sugestões em lote também exibe progresso e tempo restante pela média dos sucessos
 da execução. Treinamento/carga mostram etapas, com tempo restante indisponível
 porque o Annif não fornece progresso total. Consulte o
 [guia de uso](packaging/GUIA-USO.md#acompanhar-o-tempo-e-o-progresso).
@@ -125,7 +125,7 @@ carga/treinamento, mantendo as versões fixadas.
 O CSV gerado pela UI nativa passou pelo código de importação do Evametrics;
 veja [a validação de compatibilidade](packaging/validation-evametrics.json).
 O recebimento de resultados e logs continua ao trocar de aba, liberando
-as ações ao terminar. Suggest e treinamento identificam o projeto do resultado.
+as ações ao terminar. Sugestões de descritores e treinamento identificam o projeto do resultado.
 Para preparar uma amostra real de agricultura/NALT, veja
 [TESTE-CORPUS-NALT.md](packaging/TESTE-CORPUS-NALT.md).
 Em Vocabulários, **Atualizar vocabulários** consulta os IDs configurados e
@@ -134,7 +134,7 @@ Um teste adicional de integração com o runtime real foi executado separadament
 e passou por projetos, vocabulário, treinamento, sugestões, exportação e workspace.
 A verificação CLI nativa passou na máquina de build, inclusive após extrair
 e mover o pacote entre caminhos com espaços e acentos: carga de vocabulário,
-treinamento TF-IDF/MLLM e suggest TF-IDF/MLLM/Ensemble com conexões bloqueadas.
+treinamento TF-IDF/MLLM e sugestões TF-IDF/MLLM/Ensemble com conexões bloqueadas.
 O [relatório Windows](packaging/validation-windows.json) registra o hash e
 os limites dessa validação; o relatório Wine anterior permanece preservado.
 Em 22 de outubro de 2026, o usuário forneceu um relatório com oito testes CLI

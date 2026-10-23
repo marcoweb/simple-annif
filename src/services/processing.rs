@@ -108,11 +108,11 @@ pub fn suggest(runtime: &impl AnnifRuntime, project_id: &str, path: &Path) -> Do
         result.cancelled = cancelled;
         anyhow::ensure!(
             !cancelled,
-            "Suggest cancelado pelo usuário; resultado incompleto descartado"
+            "Geração de sugestões cancelada pelo usuário; resultado incompleto descartado"
         );
         anyhow::ensure!(
             exit_code == Some(0),
-            "Suggest falhou (código {exit_code:?}): {}",
+            "Falha ao sugerir descritores (código {exit_code:?}): {}",
             result.stderr
         );
         result.suggestions = parse_suggestions(&result.stdout)?;

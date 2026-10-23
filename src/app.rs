@@ -70,7 +70,11 @@ impl AnnifManagerApp {
                 ui.selectable_value(&mut self.selected_tab, Tab::Projects, "Projetos");
                 ui.selectable_value(&mut self.selected_tab, Tab::Vocabularies, "Vocabulários");
                 ui.selectable_value(&mut self.selected_tab, Tab::Training, "Treinamento");
-                ui.selectable_value(&mut self.selected_tab, Tab::Processing, "Suggest");
+                ui.selectable_value(
+                    &mut self.selected_tab,
+                    Tab::Processing,
+                    "Sugestões de descritores",
+                );
                 ui.selectable_value(&mut self.selected_tab, Tab::Diagnostics, "Diagnóstico");
             });
         });

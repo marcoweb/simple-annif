@@ -59,7 +59,7 @@
       "status": "passed"
     }
   ],
-  "date": "2026-10-22",
+  "date": "2026-10-23",
   "environment": "native_windows_build_machine",
   "windows": {
     "version": "25H2",
@@ -82,7 +82,7 @@
       "passed": 26,
       "failed": 0,
       "ignored": 4,
-      "ignored_reason": "4 opt-in runtime tests; existing_workflows_with_bundled_annif passed in previous cancellation milestone, not rerun for UI-only timing change"
+      "ignored_reason": "4 opt-in runtime tests; not rerun for terminology-only change; build verification and native example suggestion passed"
     },
     "packaging_unittest": {
       "passed": 3,
@@ -108,9 +108,9 @@
   },
   "runtime_only": false,
   "artifact": "dist/AnnifManager-win64.zip",
-  "artifact_size_bytes": 171722201,
-  "artifact_sha256": "47140c4305676c97ac1c8c2ba6c1c0166d56a6ee6e4c0cb00a90d500f9333a29",
-  "artifact_hash_check": "passed_independent_Get-FileHash_matches_sidecar",
+  "artifact_size_bytes": 171722312,
+  "artifact_sha256": "530717902e3e26ef7353078aeb0c92d820b543dac548b4f2f116c715e70c141e",
+  "artifact_hash_check": "passed_independent_hashlib_matches_sidecar",
   "pe_inspection": {
     "tool": "dumpbin 14.50.35726.0",
     "machine": "x64",
@@ -122,7 +122,7 @@
   "relocation_test": "passed on earlier artifact; not repeated for cancellation or progress indicators",
   "native_windows_test": "CLI and main GUI workflows passed on build machine",
   "clean_windows_test": "Earlier package: CLI passed and general GUI operation reported by user on another machine without Python; cancellation and progress indicators pending there",
-  "desktop_application_test": "Elapsed clocks and Suggest ETA/cancel/retry/hidden-tab completion passed on build machine; executable scope in validation-progress-time.json",
+  "desktop_application_test": "Current release: renamed tab/button/result column and example suggestion passed via Windows UIAutomation in isolated workspace; previous full workflows retained in detailed reports",
   "ui_flows_test": {
     "project_editor_and_listing": "passed_using_Windows_UIAutomation_on_intermediate_release",
     "all_tabs_light_background": "passed_headless_egui_regression_test",
@@ -204,8 +204,8 @@
   },
   "local_installation_update": {
     "path": "D:/AnnifManager/AnnifManager.exe",
-    "backup": "D:/AnnifManager/AnnifManager.before-progress-time.exe",
-    "sha256": "eba3241c902d6f8718e71518a91084c6630c7140502b006a0358dbc2b07f3878",
+    "backup": "D:/AnnifManager/AnnifManager.before-descritores.exe",
+    "sha256": "2e235cb323542828d9f9e979ad11a3db86519284d4aa188e80f50cfc24722d50",
     "scope": "executable only; runtime and workspace preserved",
     "hash_check": "passed"
   },
@@ -254,5 +254,15 @@
   "progress_time": {
     "status": "passed",
     "report": "packaging/validation-progress-time.json"
+  },
+  "previous_terminology_artifact_sha256": "47140c4305676c97ac1c8c2ba6c1c0166d56a6ee6e4c0cb00a90d500f9333a29",
+  "terminology": {
+    "tab_and_heading": "Sugestões de descritores",
+    "action": "Sugerir descritores",
+    "result_column": "Descritor",
+    "scope": "UI labels, help, user-facing errors and guides; Annif suggest command, parser and export fields unchanged",
+    "native_ui": "passed: renamed tab selected, action invoked, Computação result and Descritor column present, 1/1 processed without failures",
+    "native_test_workspace": "target/Validacao UI completa/AnnifManager/workspace",
+    "clean_windows": "not repeated for this release"
   }
 }

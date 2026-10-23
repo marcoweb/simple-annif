@@ -88,7 +88,7 @@ impl ProjectsUi {
                     "Projeto {} criado e selecionado. {}",
                     project.name,
                     if project.backend == "ensemble" {
-                        "Use Suggest depois de treinar os projetos fonte."
+                        "Use a aba Sugestões de descritores depois de treinar os projetos fonte."
                     } else {
                         "Próximo passo: carregue o vocabulário na aba Vocabulários e depois treine o projeto."
                     }

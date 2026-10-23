@@ -9,11 +9,11 @@
 3. Escolha **TF-IDF** ou **MLLM** e clique em **Criar projeto**. A aplicação salva
    um novo arquivo no workspace, atualiza a lista e seleciona o projeto criado.
 4. Em **Vocabulários**, carregue o arquivo correspondente ao ID informado.
-   Depois vá a **Treinamento** e, ao concluir, a **Suggest**.
+   Depois vá à aba **Treinamento** e, ao concluir, à aba **Sugestões de descritores**.
 
 Para criar um **Ensemble**, escolha pelo menos dois projetos TF-IDF/MLLM com o
 mesmo idioma e vocabulário. Os pesos começam iguais. Treine as fontes antes
-de executar Suggest; não é necessário treinar o Ensemble separadamente.
+de gerar sugestões de descritores; não é necessário treinar o Ensemble separadamente.
 
 O formulário não sobrescreve projetos existentes. Identificadores repetidos
 são rejeitados. Outros idiomas, parâmetros e pesos podem ser configurados em
@@ -38,9 +38,9 @@ convertidos para TOML antes de usar o formulário.
    para abrir `examples/treinamento.tsv`, inicie e aguarde a conclusão.
    Repita para `meu-mllm`. Ensemble utiliza os modelos dos projetos fonte;
    não é necessário treiná-lo separadamente.
-6. Selecione um dos três projetos. Em Suggest, selecione
-   `examples/documento.txt` e clique em **Executar Suggest**. Os resultados
-   apresentam assunto, score e URI. A opção **Saída completa** contém os logs.
+6. Selecione um dos três projetos. Em Sugestões de descritores, selecione
+   `examples/documento.txt` e clique em **Sugerir descritores**. Os resultados
+   apresentam descritor, score e URI. A opção **Saída completa** contém os logs.
 7. Use **Exportar resultados (JSON)** para salvar os resultados estruturados,
    com arquivo de origem, projeto, sugestões, scores, duração e eventuais erros.
    Uma falha em um documento não impede o processamento dos próximos.
@@ -52,7 +52,7 @@ Substitua projetos, vocabulário e corpus pelos seus dados para uso produtivo.
 
 ### Exportar para Evametrics
 
-Após executar Suggest, clique em **Exportar para Evametrics (CSV)**. O arquivo
+Após gerar sugestões de descritores, clique em **Exportar para Evametrics (CSV)**. O arquivo
 UTF-8 usa `ID;Titulo;Descriptores`, conforme o importador de
 [marcoweb/evametrics](https://github.com/marcoweb/evametrics/blob/9b2b9dc3d8d28bb53722ad9de63349d33598077b/components/dataset-load-control.tsx).
 Importe-o como **Dataset**, junto ao seu padrão-ouro no Evametrics.
@@ -86,7 +86,7 @@ D8001;D8001;"corn, flowering, soil"
   dentro do texto de uma linha. Cada documento precisa de assuntos conhecidos.
 - Corpus em pasta: pares `documento.txt` e `documento.key`; o `.key` contém
   os assuntos do documento, uma URI por linha (por exemplo `<https://ex/1>`).
-- Suggest: arquivos de texto. Ao selecionar uma pasta, somente seus arquivos
+- Sugestões de descritores: arquivos de texto. Ao selecionar uma pasta, somente seus arquivos
   `.txt` são usados, sem subpastas. Arquivos repetidos são processados uma vez.
 
 ## Workspace e operações
@@ -108,11 +108,11 @@ significa falha; a execução precisa terminar com código zero. Ainda não há 
 
 ### Acompanhar o tempo e o progresso
 
-Treinamento, carga de vocabulário e Suggest mostram o **tempo decorrido**.
+Treinamento, carga de vocabulário e Sugestões de descritores mostram o **tempo decorrido**.
 O cronômetro continua ao trocar de aba e para ao concluir, falhar ou cancelar;
 uma nova execução começa do zero.
 
-Em **Suggest**, a barra mostra os documentos processados e o total do lote,
+Em **Sugestões de descritores**, a barra mostra os documentos processados e o total do lote,
 com contadores separados para falhas e cancelamentos. Depois do primeiro
 documento concluído com sucesso, aparece o **tempo restante estimado**, calculado
 pela média dos documentos bem-sucedidos desta execução. Textos de tamanhos
@@ -126,14 +126,14 @@ como indisponível. Não há previsão baseada em execuções anteriores.
 
 ### Cancelar uma operação
 
-Durante **Treinamento**, **Carregar Vocabulário** ou **Suggest**, clique em
+Durante **Treinamento**, **Carregar Vocabulário** ou **Sugestões de descritores**, clique em
 **Cancelar processamento** na aba da operação. Aguarde a mensagem de cancelamento;
 as ações só serão liberadas após encerrar o processo. Os logs recebidos são mantidos.
 
 - Treinamento e carga são interrompidos sem desfazer arquivos já gravados pelo
   Annif. O modelo ou vocabulário pode ficar incompleto: repita a operação até
   concluir com sucesso antes de usar os projetos afetados.
-- Em Suggest, os resultados concluídos são mantidos. O documento interrompido
+- Em Sugestões de descritores, os resultados concluídos são mantidos. O documento interrompido
   e os restantes recebem indicação de cancelamento ou de não processamento.
   Exporte JSON para guardar o lote completo, incluindo `cancelled` e `error`.
   O CSV para Evametrics rejeita esse lote incompleto; execute novamente antes

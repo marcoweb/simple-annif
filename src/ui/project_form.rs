@@ -79,7 +79,7 @@ impl ProjectForm {
             });
             ui.label(match self.draft.backend.as_str() {
                 "mllm" => "MLLM procura termos do vocabulário no texto e aprende com documentos já classificados.",
-                "ensemble" => "Ensemble combina as sugestões de projetos existentes. Treine os projetos fonte antes de usar Suggest.",
+                "ensemble" => "Ensemble combina as sugestões de projetos existentes. Treine os projetos fonte antes de sugerir descritores.",
                 _ => "TF-IDF usa a importância das palavras nos documentos de treinamento. Uma opção simples para começar.",
             });
             if self.draft.backend == "ensemble" {

@@ -69,7 +69,7 @@ impl TrainingUi {
             .is_some_and(|p| p.backend == "ensemble")
         {
             ui.label(
-                "Ensemble combina modelos já treinados. Treine seus projetos fonte e use Suggest.",
+                "Ensemble combina modelos já treinados. Treine seus projetos fonte e use a aba Sugestões de descritores.",
             );
             return;
         }
@@ -112,7 +112,7 @@ impl TrainingUi {
         if is_training {
             super::progress::show_indeterminate(ui, self.phase, self.cancellation.is_requested());
             super::cancel_button(ui, &self.cancellation);
-            ui.small("Interromper pode deixar o modelo incompleto. Execute o treinamento novamente antes de usar Suggest.");
+            ui.small("Interromper pode deixar o modelo incompleto. Execute o treinamento novamente antes de sugerir descritores.");
             ui.ctx()
                 .request_repaint_after(std::time::Duration::from_millis(100));
             ui.horizontal(|ui| {

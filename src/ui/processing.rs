@@ -75,7 +75,7 @@ impl ProcessingUi {
         selected_project: &Option<Project>,
         runtime: &ApplicationRuntime,
     ) {
-        ui.heading("Sugestões de assuntos");
+        ui.heading("Sugestões de descritores");
         let Some(project) = selected_project else {
             ui.label("Selecione um projeto na aba Projetos.");
             return;
@@ -114,7 +114,7 @@ impl ProcessingUi {
             if ui
                 .add_enabled(
                     !self.paths_to_process.is_empty(),
-                    egui::Button::new("Executar Suggest"),
+                    egui::Button::new("Sugerir descritores"),
                 )
                 .clicked()
             {
@@ -204,7 +204,7 @@ impl ProcessingUi {
                         egui::Grid::new(("suggestions", index))
                             .striped(true)
                             .show(ui, |ui| {
-                                ui.strong("Assunto");
+                                ui.strong("Descritor");
                                 ui.strong("Score");
                                 ui.strong("URI");
                                 ui.end_row();
